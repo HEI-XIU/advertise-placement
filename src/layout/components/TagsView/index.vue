@@ -259,57 +259,41 @@ function handleScroll() {
 
 <style lang="scss" scoped>
 .tags-view-container {
-  height: 34px;
   width: 100%;
-  background: var(--tags-bg, #fff);
-  border-bottom: 1px solid var(--tags-item-border, #d8dce5);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .12), 0 0 3px 0 rgba(0, 0, 0, .04);
-
+  background: #f7f8ff;
   .tags-view-wrapper {
+    ::v-deep .el-scrollbar__view {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      padding: 0 12px;
+    }
     .tags-view-item {
       display: inline-block;
       position: relative;
       cursor: pointer;
-      height: 26px;
-      line-height: 26px;
-      border: 1px solid var(--tags-item-border, #d8dce5);
-      color: var(--tags-item-text, #495060);
-      background: var(--tags-item-bg, #fff);
-      padding: 0 8px;
-      font-size: 12px;
-      margin-left: 5px;
-      margin-top: 4px;
-
-      &:first-of-type {
-        margin-left: 15px;
-      }
-
-      &:last-of-type {
-        margin-right: 15px;
-      }
-
+      height: 30px;
+      line-height: 30px;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      color: #333;
+      background: #fff;
+      padding: 0 10px 0 15px;
+      font-size: 14px;
+      margin-right: 3px;
       &.active {
-        background-color: #42b983;
-        color: #fff;
-        border-color: #42b983;
-
-        &::before {
-          content: '';
-          background: #fff;
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          position: relative;
-          margin-right: 5px;
-        }
+        background-color: #e1e5fa !important;
+        color: #465896;
+        border-color: #bac5ff !important;
+      }
+      &:first-child {
+        padding: 0 18px;
       }
     }
   }
-
   .contextmenu {
     margin: 0;
-    background: var(--el-bg-color-overlay, #fff);
+    background: #fff;
     z-index: 3000;
     position: absolute;
     list-style-type: none;
@@ -317,17 +301,14 @@ function handleScroll() {
     border-radius: 4px;
     font-size: 12px;
     font-weight: 400;
-    color: var(--tags-item-text, #333);
-    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, .3);
-    border: 1px solid var(--el-border-color-light, #e4e7ed);
-
+    color: #333;
+    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.3);
     li {
       margin: 0;
       padding: 7px 16px;
       cursor: pointer;
-
       &:hover {
-        background: var(--tags-item-hover, #eee);
+        background: #eee;
       }
     }
   }

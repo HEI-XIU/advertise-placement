@@ -21,12 +21,15 @@
         />
       </el-menu>
     </el-scrollbar>
+    <hamburger id="hamburger-container" :is-active="appStore.sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    
   </div>
 </template>
 
 <script setup>
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
+import Hamburger from '@/components/Hamburger'
 import variables from '@/assets/styles/variables.module.scss'
 import useAppStore from '@/store/modules/app'
 import useSettingsStore from '@/store/modules/settings'
@@ -66,9 +69,13 @@ const activeMenu = computed(() => {
   }
   return path;
 });
+function toggleSideBar() {
+  appStore.toggleSideBar()
+}
 </script>
 
 <style lang="scss" scoped>
+
 .sidebar-container {
   background-color: v-bind(getMenuBackground);
   
