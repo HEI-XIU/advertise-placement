@@ -149,6 +149,20 @@ export const dynamicRoutes = [
       }
     ]
   },
+  {
+    path: '/order/add_order',
+    component: Layout,
+    hidden: true,
+    permissions: ['tool:gen:edit'],
+    children: [
+      {
+        path: 'index/:tableId(\\d+)',
+        component: () => import('@/views/order/addorder/index'),
+        name: 'GenEdit',
+        meta: { title: '订单发起', activeMenu: '/order/addorder' }
+      }
+    ]
+  }
 ]
 
 const router = createRouter({
