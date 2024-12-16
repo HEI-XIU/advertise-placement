@@ -49,6 +49,7 @@ const useUserStore = defineStore(
             this.id = user.userId
             this.name = user.userName
             this.avatar = avatar
+            this.nickName = user.nickName
             resolve(res)
           }).catch(error => {
             reject(error)

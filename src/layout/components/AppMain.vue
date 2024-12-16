@@ -3,7 +3,11 @@
     <router-view v-slot="{ Component, route }">
       <transition name="fade-transform" mode="out-in">
         <keep-alive :include="tagsViewStore.cachedViews">
-          <component v-if="!route.meta.link" :is="Component" :key="route.path"/>
+          <component
+            v-if="!route.meta.link"
+            :is="Component"
+            :key="route.path"
+          />
         </keep-alive>
       </transition>
     </router-view>
@@ -12,23 +16,23 @@
 </template>
 
 <script setup>
-import iframeToggle from "./IframeToggle/index"
-import useTagsViewStore from '@/store/modules/tagsView'
+import iframeToggle from "./IframeToggle/index";
+import useTagsViewStore from "@/store/modules/tagsView";
 
-const route = useRoute()
-const tagsViewStore = useTagsViewStore()
+const route = useRoute();
+const tagsViewStore = useTagsViewStore();
 
 onMounted(() => {
-  addIframe()
-})
+  addIframe();
+});
 
 watch((route) => {
-  addIframe()
-})
+  addIframe();
+});
 
 function addIframe() {
   if (route.meta.link) {
-    useTagsViewStore().addIframeView(route)
+    useTagsViewStore().addIframeView(route);
   }
 }
 </script>
@@ -36,10 +40,15 @@ function addIframe() {
 <style lang="scss" scoped>
 .app-main {
   /* 50= navbar  50  */
-  min-height: calc(100vh - 50px);
+  //min-height: calc(100vh - 50px);
   width: 100%;
   position: relative;
   overflow: hidden;
+  background-color: #fff;
+  box-sizing: border-box;
+
+   padding: 10px;
+  background-color: #f0f2f5 !important;
 }
 
 .fixed-header + .app-main {
@@ -80,4 +89,3 @@ function addIframe() {
   border-radius: 3px;
 }
 </style>
-

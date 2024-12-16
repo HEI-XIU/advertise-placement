@@ -45,7 +45,7 @@
                v-hasPermi="['system:notice:add']"
             >新增</el-button>
          </el-col>
-         <el-col :span="1.5">
+         <!-- <el-col :span="1.5">
             <el-button
                type="success"
                plain
@@ -65,12 +65,12 @@
                v-hasPermi="['system:notice:remove']"
             >删除</el-button>
          </el-col>
-         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
+         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar> -->
       </el-row>
 
       <el-table v-loading="loading" :data="noticeList" @selection-change="handleSelectionChange">
-         <el-table-column type="selection" width="55" align="center" />
-         <el-table-column label="序号" align="center" prop="noticeId" width="100" />
+         <!-- <el-table-column type="selection" width="55" align="center" /> -->
+         <!-- <el-table-column label="序号" align="center" prop="noticeId" width="100" /> -->
          <el-table-column
             label="公告标题"
             align="center"

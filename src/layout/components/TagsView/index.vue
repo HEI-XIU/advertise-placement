@@ -99,7 +99,8 @@ function isAffix(tag) {
 
 function isFirstView() {
   try {
-    return selectedTag.value.fullPath === '/index' || selectedTag.value.fullPath === visitedViews.value[1].fullPath
+    // return selectedTag.value.fullPath === '/index' || selectedTag.value.fullPath === visitedViews.value[1].fullPath
+    return selectedTag.value.fullPath === '/system/menu' || selectedTag.value.fullPath === visitedViews.value[1].fullPath
   } catch (err) {
     return false
   }
@@ -260,34 +261,35 @@ function handleScroll() {
 <style lang="scss" scoped>
 .tags-view-container {
   width: 100%;
+  height: 34px;
   background: #f7f8ff;
   .tags-view-wrapper {
-    ::v-deep .el-scrollbar__view {
+     .el-scrollbar__view {
       display: flex;
       align-items: center;
-      height: 40px;
+      height: 26px;
       padding: 0 12px;
     }
     .tags-view-item {
       display: inline-block;
       position: relative;
       cursor: pointer;
-      height: 30px;
-      line-height: 30px;
+      height: 26px;
+      line-height: 26px;
       border: 1px solid #e5e5e5;
       border-radius: 4px;
       color: #333;
       background: #fff;
-      padding: 0 10px 0 15px;
-      font-size: 14px;
-      margin-right: 3px;
+      padding: 0 6px 0 6px;
+      font-size: 11px;
+      margin:4px;
       &.active {
         background-color: #e1e5fa !important;
         color: #465896;
         border-color: #bac5ff !important;
       }
       &:first-child {
-        padding: 0 18px;
+        margin-left: 10px;
       }
     }
   }
@@ -299,7 +301,7 @@ function handleScroll() {
     list-style-type: none;
     padding: 5px 0;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 400;
     color: #333;
     box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.3);
@@ -313,6 +315,33 @@ function handleScroll() {
     }
   }
 }
+::deep .el-scrollbar__wrap {
+  height: 100% !important;
+  margin-right: 0 !important;
+  margin-bottom: 0 !important;
+  overflow: auto;
+}
+::deep .el-scrollbar__wrap::-webkit-scrollbar {
+  background-color: #f5f5f5;
+  height: 10px;
+  width: 5px;
+}
+
+::deep .el-scrollbar__wrap::-webkit-scrollbar-thumb {
+  background-color: #e1e5fa;
+  height: 11px;
+  border-radius: 15px;
+}
+::deep .el-scrollbar__bar {
+  &.is-horizontal {
+    display: none;
+  }
+}
+::deep .el-scrollbar__bar {
+  &.is-vertical {
+    display: none;
+  }
+}
 </style>
 
 <style lang="scss">
@@ -320,25 +349,20 @@ function handleScroll() {
 .tags-view-wrapper {
   .tags-view-item {
     .el-icon-close {
-      width: 16px;
-      height: 16px;
-      vertical-align: 2px;
+      display: inline-block;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       text-align: center;
-      transition: all .3s cubic-bezier(.645, .045, .355, 1);
+      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
       transform-origin: 100% 50%;
-
       &:before {
-        transform: scale(.6);
+        transform: scale(0.6);
         display: inline-block;
-        vertical-align: -3px;
       }
-
       &:hover {
-        background-color: var(--tags-close-hover, #b4bccc);
+        background-color: #b4bccc;
         color: #fff;
-        width: 12px !important;
-        height: 12px !important;
       }
     }
   }

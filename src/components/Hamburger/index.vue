@@ -26,7 +26,7 @@ export default {
 
 <style scoped lang="scss">
 .hamburger-box {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -36,8 +36,8 @@ export default {
 }
 
 img {
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
   transform: rotate(180deg);
 
   &.is-active {

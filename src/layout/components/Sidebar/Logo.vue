@@ -63,7 +63,7 @@ const getLogoTextColor = computed(() => {
   width: 100%;
   height: 50px;
   line-height: 50px;
-  background: v-bind(getLogoBackground);
+
   text-align: center;
   overflow: hidden;
 

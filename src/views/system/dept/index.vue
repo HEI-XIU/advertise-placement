@@ -176,7 +176,8 @@ const { queryParams, form, rules } = toRefs(data);
 function getList() {
   loading.value = true;
   listDept(queryParams.value).then(response => {
-    deptList.value = proxy.handleTree(response.data, "deptId");
+    const filteredData = response.data.filter(item => item.parentId !== 0);
+    deptList.value = proxy.handleTree(filteredData, "deptId");
     loading.value = false;
   });
 }

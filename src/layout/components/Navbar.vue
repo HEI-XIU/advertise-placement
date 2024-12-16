@@ -7,16 +7,19 @@
     <div class="right-menu">
       <template v-if="appStore.device !== 'mobile'">
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
-        <el-tooltip content="主题模式" effect="dark" placement="bottom">
-          <div class="right-menu-item hover-effect theme-switch-wrapper" @click="toggleTheme">
+        <!-- <el-tooltip content="主题模式" effect="dark" placement="bottom">
+          <div
+            class="right-menu-item hover-effect theme-switch-wrapper"
+            @click="toggleTheme"
+          >
             <svg-icon v-if="settingsStore.isDark" icon-class="sunny" />
             <svg-icon v-if="!settingsStore.isDark" icon-class="moon" />
           </div>
-        </el-tooltip>
+        </el-tooltip> -->
       </template>
       <el-dropdown
         class="avatar-container right-menu-item hover-effect"
-        trigger="click"
+        @command="handleCommand" 
       >
         <div class="avatar-wrapper">
           <div class="user-avatar">
@@ -24,15 +27,18 @@
           </div>
           <span class="right-menu-item hover-effect" v-text="userName"></span>
         </div>
-        <el-dropdown-menu >
-          <router-link to="/user/profile">
-            <el-dropdown-item>个人中心</el-dropdown-item>
-          </router-link>
-          <el-dropdown-item divided command="logout">
-            <span>退出登录</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <router-link to="/user/profile">
+              <el-dropdown-item>个人中心</el-dropdown-item>
+            </router-link>
+            <el-dropdown-item divided command="logout">
+              <span>退出登录</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
       </el-dropdown>
+
       <!-- <div class="avatar-container">
         <el-dropdown @command="handleCommand" class="right-menu-item hover-effect" trigger="click">
           <div class="avatar-wrapper">
@@ -59,22 +65,22 @@
 </template>
 
 <script setup>
-import { ElMessageBox } from 'element-plus'
-import Breadcrumb from '@/components/Breadcrumb'
-import TopNav from '@/components/TopNav'
-import Hamburger from '@/components/Hamburger'
-import Screenfull from '@/components/Screenfull'
-import useAppStore from '@/store/modules/app'
-import useUserStore from '@/store/modules/user'
-import useSettingsStore from '@/store/modules/settings'
+import { ElMessageBox } from "element-plus";
+import Breadcrumb from "@/components/Breadcrumb";
+import TopNav from "@/components/TopNav";
+import Hamburger from "@/components/Hamburger";
+import Screenfull from "@/components/Screenfull";
+import useAppStore from "@/store/modules/app";
+import useUserStore from "@/store/modules/user";
+import useSettingsStore from "@/store/modules/settings";
 
-const appStore = useAppStore()
-const userStore = useUserStore()
-const settingsStore = useSettingsStore()
-const userName = "测试"
+const appStore = useAppStore();
+const userStore = useUserStore();
+const settingsStore = useSettingsStore();
+const userName = userStore.nickName||"用户名";
 
 function toggleSideBar() {
-  appStore.toggleSideBar()
+  appStore.toggleSideBar();
 }
 
 function handleCommand(command) {
@@ -83,6 +89,7 @@ function handleCommand(command) {
       setLayout();
       break;
     case "logout":
+      console.log(123)
       logout();
       break;
     default:
@@ -91,30 +98,33 @@ function handleCommand(command) {
 }
 
 function logout() {
-  ElMessageBox.confirm('确定注销并退出系统吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    userStore.logOut().then(() => {
-      location.href = '/index';
+  ElMessageBox.confirm("确定注销并退出系统吗？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(() => {
+      userStore.logOut().then(() => {
+        // location.href = "/index";
+        location.href = '/system/menu';
+      });
     })
-  }).catch(() => { });
+    .catch(() => {});
 }
 
-const emits = defineEmits(['setLayout'])
+const emits = defineEmits(["setLayout"]);
 function setLayout() {
-  emits('setLayout');
+  emits("setLayout");
 }
 
 function toggleTheme() {
-  settingsStore.toggleTheme()
+  settingsStore.toggleTheme();
 }
 </script>
 
 <style lang="scss" scoped>
 .navbar {
-  height: 40px;
+  height: 26px;
   overflow: hidden;
   position: relative;
   background: #e1e5fa;
@@ -144,7 +154,7 @@ function toggleTheme() {
       display: inline-block;
       padding: 0 8px;
       height: 100%;
-      font-size: 16px;
+      font-size: 12px;
       color: #465896;
       vertical-align: text-bottom;
       line-height: 60px;
@@ -158,7 +168,7 @@ function toggleTheme() {
         }
       }
 
-      &>.question {
+      & > .question {
         scale: 1.4;
       }
     }
@@ -171,16 +181,16 @@ function toggleTheme() {
 
         .user-avatar {
           cursor: pointer;
-          width: 24px;
-          height: 24px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
           background-image: linear-gradient(to bottom, #d8deff, #465896);
           display: flex;
           align-items: center;
           justify-content: center;
           img {
-            width: 16px;
-            height: 16px;
+            width: 12px;
+            height: 12px;
           }
         }
 
