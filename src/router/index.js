@@ -162,6 +162,20 @@ export const dynamicRoutes = [
         meta: { title: '订单发起', activeMenu: '/order/addorder' }
       }
     ]
+  },
+  {
+    path: '/order/my_order',
+    component: Layout,
+    hidden: true,
+    permissions: ['tool:gen:edit'],
+    children: [
+      {
+        path: 'index/:tableId(\\d+)',
+        component: () => import('@/views/order/myorder/index'),
+        name: 'GenEdit',
+        meta: { title: '我的订单', activeMenu: '/order/myorder' }
+      }
+    ]
   }
 ]
 

@@ -5,19 +5,19 @@
             <el-divider />
         </div>
       <div class="form">
-        <el-form :model="formData" label-position="right">
+        <el-form :model="formData" ref="form" label-position="right" :rules = "rules">
           <div class="base-info">
             <!-- 第一行 -->
             <el-row :gutter="30">
               <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="订单编号" label-width="100px">
-                  <el-input style="width: 100%;" v-model="formData.orderId" placeholder="系统自动带出" clearable />
+                <el-form-item label="订单编号" label-width="100px" prop="orderId">
+                  <el-input style="width: 100%;" disabled v-model="formData.orderId" placeholder="系统自动带出" clearable />
                 </el-form-item>
               </el-col>
   
               <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="发起人" label-width="100px">
-                  <el-input style="width: 100%;" v-model="formData.createby" placeholder="系统自动带出" clearable />
+                <el-form-item label="发起人" label-width="100px" prop="createBy">
+                  <el-input style="width: 100%;" disabled v-model="formData.createBy" placeholder="系统自动带出" clearable />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -25,13 +25,13 @@
             <!-- 第二行 -->
             <el-row :gutter="30">
               <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="订单名称" label-width="100px">
+                <el-form-item label="订单名称" label-width="100px" prop="orderName">
                   <el-input style="width: 100%;" v-model="formData.orderName" placeholder="请输入" clearable />
                 </el-form-item>
               </el-col>
   
               <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="创建时间" label-width="100px">
+                <el-form-item label="创建时间" label-width="100px" prop="createTime">
                   <el-input style="width: 100%;" v-model="formData.createTime" placeholder="请输入" clearable />
                 </el-form-item>
               </el-col>
@@ -40,7 +40,7 @@
             <!-- 第三行 -->
             <el-row :gutter="30">
               <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="投放开始时间" label-width="100px">
+                <el-form-item label="投放开始时间" label-width="110px" prop="startTime">
                   <el-date-picker
                   style="width: 100%;"
               v-model="formData.startTime"
@@ -52,7 +52,7 @@
               </el-col>
   
               <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="投放结束时间" label-width="100px">
+                <el-form-item label="投放结束时间" label-width="110px" prop="endTime">
                   <el-date-picker
                    style="width: 100%;"
               v-model="formData.endTime"
@@ -63,7 +63,7 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-form-item label="需求描述" label-width="100px">
+            <el-form-item label="需求描述" label-width="100px" prop="descript">
                   <el-input style="width: 100%;" type="textarea" v-model="formData.descript" placeholder="请输入" />
                 </el-form-item>
                 <el-form-item
@@ -114,16 +114,55 @@
   </template>
 <script setup>
 import { onMounted, ref } from 'vue';
-import { uploadFile,downloadFile,submitTab } from '@/api/OrderApi/addOrder';
+import { uploadFile,downloadFile,submitorderTab,saveorderTab,getuserinfo } from '@/api/OrderApi/addOrder';
+// import {Message} from "element-ui";
+const router = useRouter()
 const formData = ref({
+    userId:'',
     orderId:'',
-    createby:'',
+    createBy:'',
     orderName:'',
     createTime:ref(getCurrentTime()),
     startTime:'',
     endTime:'',
     descript:'',
 })
+
+// 校验规则对象
+const form = ref(null)
+const rules = {
+  orderId: [
+    { required: true, message: '订单编号不能为空', trigger: 'blur' }
+  ],
+  createBy: [
+    { required: true, message: '发起人不能为空', trigger: 'blur' }
+  ],
+  orderName: [
+    { required: true, message: '订单名称不能为空', trigger: 'blur' }
+  ],
+  createTime: [
+    { required: true, message: '创建时间不能为空', trigger: 'blur' }
+  ],
+  startTime: [
+    { required: true, message: '投放开始时间不能为空', trigger: 'blur' }
+  ],
+  endTime: [
+    { required: true, message: '投放结束时间不能为空', trigger: 'blur' }
+  ],
+  descript: [
+    { required: true, message: '需求描述不能为空', trigger: 'blur' }
+  ]
+};
+
+//获取当前用户信息
+const getuserInfo = () => {
+  getuserinfo().then(res => {
+    console.log(res)
+    formData.value.createBy = res.user.nickName
+    formData.value.userId = res.user.userId
+  })
+};
+
 //文件上传
 // 响应式变量
 const fileList = ref([]);
@@ -247,9 +286,57 @@ const handlePreview = (file) => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 月份从 0 开始，需要 +1
   const day = date.getDate().toString().padStart(2, '0'); // 日期补零
+
+  const hours = date.getHours().toString().padStart(2, '0'); // 时补零
+  const minutes = date.getMinutes().toString().padStart(2, '0'); // 分补零
+  const seconds = date.getSeconds().toString().padStart(2, '0'); // 秒补零
   
-  return `${year}-${month}-${day}`;
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
+
+// 保存方法
+const saveForm = () => {
+  // 调用表单的 validate 方法
+  form.value.validate((valid) => {
+    if (valid) {
+      // 校验通过，执行保存逻辑
+      let params = {
+        amount: '',
+        assignedMedia: '',
+        content: formData.value.descript,
+        createBy: formData.value.userId,
+        createTime: formData.value.createTime,
+        currentHandler: '',
+        endTime: formatDate(formData.value.endTime),
+        id: '',
+        isBack: '',
+        level: '',
+        orderNo: 'ORD123456789',
+        remark: '',
+        startTime: formatDate(formData.value.startTime),
+        status: '',
+        title: formData.value.orderName,
+        updateBy: '',
+        updateTime: ''
+      };
+
+      saveorderTab(params).then((res) => {
+        console.log(res);
+        if (res.code === 200) {
+          router.push('/order/myorder');
+        }
+      }).catch(() => {
+        // 错误处理
+      });
+
+      console.log(params);
+    } else {
+      // 校验不通过，输出提示
+      console.log('表单验证失败');
+    }
+  });
+};
+
     //提交
     const submitForm = () => {
         console.log(formatDate(formData.value.startTime))
@@ -257,7 +344,7 @@ const handlePreview = (file) => {
             amount: '',
             assignedMedia: '',
             content: formData.value.descript,
-            createBy: 1001,
+            createBy: formData.value.userId,
             createTime: formData.value.createTime,
             currentHandler: '',
             endTime: formatDate(formData.value.endTime),
@@ -272,10 +359,18 @@ const handlePreview = (file) => {
             updateBy: '',
             updateTime: '',
         }
+        submitorderTab(params).then( (res) => {
+          console.log(res)
+          if(res.code==200){ 
+            router.push('/order/myorder')
+          }
+        }).catch(() => {
+             
+            });
         console.log(params)
     }
 onMounted(() => {
-
+  getuserInfo()
 });
 </script>
 <style scoped>

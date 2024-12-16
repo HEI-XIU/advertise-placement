@@ -23,11 +23,37 @@ export function uploadFile (formData) {
     })
 }
 
-    //发起订单申请提交
-export function submitTab(data) {
+    //保存订单提交申请
+export function saveorderTab(data) {
     return request({
-      url: '/dev-api/advertOrder/saveOrUpdateOrder',
+      url: '/advertOrder/saveOrUpdateOrder',
       method: 'post',
       data: data
     })
   }
+
+      //发起订单申请提交
+export function submitorderTab(data) {
+  return request({
+    url: '/advertOrder/submit',
+    method: 'post',
+    data: data
+  })
+}
+
+  //获取当前用户信息
+  export function getuserinfo() {
+    return request({
+      url: '/getInfo',
+      method: 'get',
+    })
+  }
+
+    //获取广告列表
+    export function getorderList(params){
+      return request({
+        url: '/advertOrder/list',
+        method: 'post',
+        data: params
+      })
+    }
