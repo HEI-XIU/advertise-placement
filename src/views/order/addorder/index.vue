@@ -72,6 +72,8 @@
           >
           </el-form-item>
           <el-form-item class="upload-item">
+            <!-- <FileUpload
+            /> -->
             <el-upload
               action=""
               :http-request="beforeUpload"
@@ -115,7 +117,9 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { uploadFile,downloadFile,submitorderTab,saveorderTab,getuserinfo } from '@/api/OrderApi/addOrder';
-// import {Message} from "element-ui";
+import {ElMessage} from "element-plus";
+// import FileUpload from "@/components/FileUpload/index.vue";
+
 const router = useRouter()
 const formData = ref({
     userId:'',
@@ -131,9 +135,9 @@ const formData = ref({
 // 校验规则对象
 const form = ref(null)
 const rules = {
-  orderId: [
-    { required: true, message: '订单编号不能为空', trigger: 'blur' }
-  ],
+  // orderId: [
+  //   { required: true, message: '订单编号不能为空', trigger: 'blur' }
+  // ],
   createBy: [
     { required: true, message: '发起人不能为空', trigger: 'blur' }
   ],
@@ -165,6 +169,8 @@ const getuserInfo = () => {
 
 //文件上传
 // 响应式变量
+const showSubmit = ref(true);
+const type = ref(''); // 上传类型，可能是 'review' 或其他
 const fileList = ref([]);
 const fileMsg = ref([]);
 
@@ -182,10 +188,18 @@ function getCurrentTime() {
       // 上传文件
       uploadFile(formData).then((res) => {
         if (res.success) {
-          Message.success("文件解析成功！");
-          this.fileMsg.push(res.data);
+          ElMessage({
+            message:'文件解析成功!',
+            type:'success',
+          })
+          // Message.success("文件解析成功！");
+          fileMsg.value.push(res.data);
         } else {
-          Message.error("导入解析失败！");
+          // Message.error("导入解析失败！");
+          ElMessage({
+            message:'导入解析失败!',
+            type:'error',
+          })
         }
         // this.fileList = [];
       });
@@ -216,16 +230,26 @@ function getCurrentTime() {
           suffix === "rar" ||
           suffix === "ppt" ||
           suffix === "pptx" ||
-          suffix === "txt"
+          suffix === "txt"||
+          suffix === "mp3"||
+          suffix === "mp4"
         )
       ) {
-        Message.warning("上传文件只能是支持的格式!");
+        ElMessage({
+            message:'上传文件只能是支持的格式!',
+            type:'warning',
+          })
+        // Message.warning("上传文件只能是支持的格式!");
         return false;
       }
 
       const isLt2M = file.size / 1024 / 1024 < 50; //这里做文件大小限制
       if (!isLt2M) {
-        Message.warning("上传文件大小不能超过 50MB!");
+        ElMessage({
+            message:'上传文件大小不能超过 50MB!',
+            type:'warning',
+          })
+        // Message.warning("上传文件大小不能超过 50MB!");
         return false;
       }
       return true;
@@ -244,7 +268,7 @@ const handlePreview = (file) => {
   const clickFile = (file) => {
       let fileUrl = "";
       let fileName = "";
-      fileMsg.forEach((item) => {
+      fileMsg.value.forEach((item) => {
         if (file.name == item.fileName) {
           fileUrl = item.fileUrl;
           fileName = item.fileName;
@@ -263,26 +287,35 @@ const handlePreview = (file) => {
             elink.click();
             document.body.removeChild(elink);
           } else {
-            this.$message.error("下载异常");
+           ElMessage.error('下载异常')
+            // this.$message.error("下载异常");
           }
         })
         .catch((err) => {
         });
+        console.log(fileMsg.value)
     };
         //移除文件
         const removeFile = (file) => {
       let index = null;
-      fileMsg.forEach((item, i) => {
+      fileMsg.value.forEach((item, i) => {
         if (file.name == item.fileName) {
           index = i;
         }
       });
-      fileMsg.splice(index, 1);
+      fileMsg.value.splice(index, 1);
+      console.log(fileMsg.value)
     };
    const handleExceed = () => {
-      Message.warning("上传文件数量不能超过10个!");
+    ElMessage({
+            message:'上传文件数量不能超过10个!',
+            type:'warning',
+          })
+      // Message.warning("上传文件数量不能超过10个!");
     };
-    function formatDate(date) {
+
+    //日期格式化
+  function formatDate(date) {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 月份从 0 开始，需要 +1
   const day = date.getDate().toString().padStart(2, '0'); // 日期补零
@@ -292,6 +325,11 @@ const handlePreview = (file) => {
   const seconds = date.getSeconds().toString().padStart(2, '0'); // 秒补零
   
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+//取消
+const cancel = () => {
+  router.push('/order/myorder')
 }
 
 // 保存方法
@@ -317,7 +355,8 @@ const saveForm = () => {
         status: '',
         title: formData.value.orderName,
         updateBy: '',
-        updateTime: ''
+        updateTime: '',
+        orderFiles:fileMsg.value,
       };
 
       saveorderTab(params).then((res) => {
@@ -358,6 +397,7 @@ const saveForm = () => {
             title: formData.value.orderName,
             updateBy: '',
             updateTime: '',
+            orderFiles:fileMsg.value,
         }
         submitorderTab(params).then( (res) => {
           console.log(res)
