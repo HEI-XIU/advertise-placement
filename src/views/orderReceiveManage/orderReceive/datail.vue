@@ -47,7 +47,7 @@
               v-model="formData.startTime"
               type="date"
               :editable="false"
-              :placeholder="!statusDisable ? '请选择' : ''"
+              placeholder="请选择"
             />
           </el-form-item>
 
@@ -57,7 +57,7 @@
               v-model="formData.endTime"
               type="date"
               :editable="false"
-              :placeholder="!statusDisable ? '请选择' : ''"
+              placeholder="请选择"
             />
           </el-form-item>
 
@@ -77,9 +77,7 @@
             <fileUpload
               style="width: 100%"
               :fileSize="1024"
-              :fileType="fileType"
               :isShowTip="false"
-              @updateFileList="updateFileList"
               :fileList="fileMsg"
             >
             </fileUpload>
@@ -101,10 +99,10 @@
           <!-- <el-form-item label="操作" label-width="100px" prop="operate">
             <el-radio-group v-model="editData.operate">
               <el-radio label="1">
-                <span class="radioRed">驳回</span>
+                <span class="btnRed">驳回</span>
               </el-radio>
               <el-radio label="2">
-                <span class="radioGreen">通过</span>
+                <span class="btnGreen">通过</span>
               </el-radio>
             </el-radio-group>
           </el-form-item> -->
@@ -153,7 +151,7 @@
                   style="font-weight: normal; margin-right: 30px"
                 >
                   审批人：{{ item.sysUser.nickName }}
-                  <el-tag type="info" size="mini">{{
+                  <el-tag type="info" size="small">{{
                     item.sysUser.dept.deptName
                   }}</el-tag>
                 </label>
@@ -179,8 +177,9 @@
                     :type="getTimelineItemType(item)"
                     class="reason-tag"
                     :title="item.remark"
-                    >{{ item.remark }}</el-tag
                   >
+                    {{ item.remark }}
+                  </el-tag>
                 </p>
               </el-card>
             </el-timeline-item>
@@ -195,23 +194,23 @@
           <el-button class="purple" @click="cancel" type="info">取消</el-button>
           <el-button
             type="danger"
-            class="radioRed"
+            class="btnRed"
             @click="reject"
             v-loading="submitLoading"
             v-if="isShow && !isReview"
             >驳回派单</el-button
           >
           <el-button
-            type="success"
-            class="radioGreen"
+            type="primary"
+            class="btnGreen"
             @click="approve"
             v-loading="submitLoading"
             v-if="isShow && !isReview"
             >通过派单</el-button
           >
           <el-button
-            type="success"
-            class="radioGreen"
+            type="primary"
+            class="btnGreen"
             @click="approve"
             v-loading="submitLoading"
             v-if="!isShow && !isReview"
@@ -279,7 +278,6 @@ onMounted(() => {
   const detailId = router.currentRoute.value.query?.id;
   type.value = router.currentRoute.value.query?.type;
   isReview.value = type.value == "review" ? true : false;
-  console.log(isReview);
   if (detailId) {
     getDetail(detailId);
     getTasks(detailId);
@@ -316,7 +314,6 @@ const getTasks = (detailId) => {
     const foundElement = res.data.find(
       (element) => element.userId === userStore.id
     );
-    console.log(foundElement);
     editData.value.remark = foundElement?.remark;
     tasks.value = res.data;
   });
@@ -447,5 +444,13 @@ const getTimelineItemType = (item) => {
 
 .formTable {
   width: 100%;
+}
+.reason-tag {
+  display: inline-block;
+  height: auto;
+  word-wrap: break-word;
+  white-space: normal;
+  line-height: 1.5;
+  text-align: left;
 }
 </style>

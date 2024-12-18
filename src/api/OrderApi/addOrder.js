@@ -120,3 +120,12 @@ export function getOrderAcceptList(data) {
     data: data
   })
 }
+
+//撤回
+export function withdraw(params) {
+  return request({
+    url: '/advertOrder/withdraw',
+    method: 'post',
+    params: params
+  })
+}

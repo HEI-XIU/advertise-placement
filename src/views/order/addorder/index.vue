@@ -16,7 +16,7 @@
           label-position="right"
           :rules="rules"
           ref="form"
-          :disabled="isDisabled"
+          :disabled="isShow"
         >
           <el-form-item label="订单编号" label-width="110px" prop="orderNo">
             <el-input
@@ -53,7 +53,8 @@
               v-model="formData.startTime"
               type="date"
               :editable="false"
-              :placeholder="!statusDisable ? '请选择' : ''"
+              placeholder="请选择"
+              @change="validateField('startTime')"
             />
           </el-form-item>
 
@@ -63,7 +64,8 @@
               v-model="formData.endTime"
               type="date"
               :editable="false"
-              :placeholder="!statusDisable ? '请选择' : ''"
+              placeholder="请选择"
+              @change="validateField('endTime')"
             />
           </el-form-item>
 
@@ -86,6 +88,7 @@
               :fileType="fileType"
               @updateFileList="updateFileList"
               :fileList="fileMsg"
+              :isShowTip="!isShow"
             >
             </fileUpload>
           </el-form-item>
@@ -96,14 +99,25 @@
     <div class="form-bottom">
       <div class="form-bottom">
         <div class="bottom-btns">
-          <el-button class="purple" @click="cancel">取消</el-button>
-          <el-button class="radioGreen" @click="saveForm">保存</el-button>
+          <el-button type="info" class="purple" @click="cancel">取消</el-button>
           <el-button
-            class="radioGreen"
-            @click="submitForm"
-            v-loading="submitLoading"
-            >派单</el-button
+            type="primary"
+            class="btnGreen"
+            @click="saveForm"
+            v-if="!isShow"
           >
+            保存
+          </el-button>
+          <el-button
+            type="primary"
+            class="btnGreen"
+            @click="submitForm"
+            
+            v-if="!isShow"
+          >
+          <!-- v-loading="submitLoading" -->
+            派单
+          </el-button>
         </div>
       </div>
     </div>
@@ -114,7 +128,6 @@ import { onMounted, ref } from "vue";
 import {
   submitorderTab,
   saveorderTab,
-  getuserinfo,
   getOrderDetail,
 } from "@/api/orderApi/addOrder";
 import useUserStore from "@/store/modules/user";
@@ -132,6 +145,7 @@ const fileType = ref([
 ]);
 const router = useRouter();
 const userStore = useUserStore();
+const { proxy } = getCurrentInstance();
 
 const formData = ref({
   id: "", //订单id
@@ -146,38 +160,79 @@ const formData = ref({
 });
 // 校验规则对象
 const form = ref(null);
-const rules = {
+const rules = reactive({
   title: [{ required: true, message: "订单名称不能为空", trigger: "blur" }],
-  // createTime: [{ required: true, message: "创建时间不能为空", trigger: "blur" },],
   startTime: [
-    { required: true, message: "投放开始时间不能为空", trigger: "blur" },
+    {
+      required: true,
+      validator: (rule, value, callback) => {
+        if (!value) {
+          callback(new Error("请选择投放开始时间"));
+        } else {
+          if (!formData.value.endTime) {
+            callback(new Error("请选择投放结束时间！"));
+          } else if (Date.parse(formData.value.endTime) < Date.parse(value)) {
+            callback(new Error("投放开始时间不得早于投放结束时间"));
+          } else {
+            form.value.clearValidate("startTime");
+            form.value.clearValidate("endTime");
+            callback();
+          }
+        }
+      },
+      trigger: "[blur,change]",
+    },
   ],
   endTime: [
-    { required: true, message: "投放结束时间不能为空", trigger: "blur" },
+    {
+      required: true,
+      validator: (rule, value, callback) => {
+        if (!value) {
+          callback(new Error("请选择投放结束时间！"));
+        } else {
+          if (!formData.value.startTime) {
+            callback(new Error("请选择投放开始时间！"));
+          } else if (Date.parse(formData.value.startTime) > Date.parse(value)) {
+            callback(new Error("投放开始时间不得晚于投放结束时间"));
+          } else {
+            //清除校验
+            form.value.clearValidate("startTime");
+            form.value.clearValidate("endTime");
+            callback();
+          }
+        }
+      },
+      trigger: "[blur,change]",
+    },
   ],
   content: [{ required: true, message: "需求描述不能为空", trigger: "blur" }],
-};
+});
 // 响应式变量
 const type = ref(""); // 上传类型，可能是 'review' 或其他
-const isDisabled = ref(type == "review" ? true : false);
+const isShow = ref(false);
 const fileList = ref([]);
 const fileMsg = ref([]);
 
 onMounted(() => {
   const detailId = router.currentRoute.value.query?.id;
   type.value = router.currentRoute.value.query?.type;
-  // getuserInfo();
+  isShow.value = type.value == "review" ? true : false;
   if (detailId) getDetail(detailId);
 });
-
-//获取当前用户信息
-// const getuserInfo = () => {
-//   getuserinfo().then((res) => {
-//     formData.value.createBy = res.user.userId;
-//     formData.value.createName = res.user.nickName;
-//   });
-// };
-
+const validateField = (field) => {
+  form.value.validateField(
+    field,
+    (errorMessage) => {
+      console.log(field, errorMessage);
+    }
+    // (errorMessage) => {
+    //   console.log(field,errorMessage)
+    //   if (errorMessage) {
+    //     proxy.$modal.msgError(errorMessage);
+    //   }
+    // }
+  );
+};
 const getDetail = (detailId) => {
   if (detailId) {
     getOrderDetail({ id: detailId })
@@ -213,7 +268,7 @@ const formatDate = (date) => {
   const seconds = date.getSeconds().toString().padStart(2, "0"); // 秒补零
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
+};
 
 // 保存方法
 const saveForm = () => {

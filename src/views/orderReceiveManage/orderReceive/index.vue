@@ -69,7 +69,7 @@
         </span>
       </div>
     </div>
-    <el-table v-loading="loading" :data="orderReceiveList">
+    <el-table :data="orderReceiveList">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <el-table-column label="序号" align="center" type="index" width="50" />
       <el-table-column
@@ -149,6 +149,7 @@
             type="primary"
             icon="Edit"
             @click="handleEdit(scope.row)"
+            v-if="scope.row.operate==0 || (scope.row.status == 0||scope.row.status == 2)"
             >处理</el-button
           >
           <el-button
@@ -158,13 +159,14 @@
             @click="handleReview(scope.row)"
             >查看</el-button
           >
-          <el-button
+          <!-- <el-button
             link
-            type="primary"
+            type="danger"
             icon="Delete"
             @click="handleDelete(scope.row)"
+            v-if="userStore.level == 1 &&(scope.row.status == 0||scope.row.status == 2)"
             >删除</el-button
-          >
+          > -->
         </template>
       </el-table-column>
     </el-table>

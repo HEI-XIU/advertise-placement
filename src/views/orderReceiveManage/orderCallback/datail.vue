@@ -50,7 +50,7 @@
               v-model="formData.startTime"
               type="date"
               :editable="false"
-              :placeholder="!statusDisable ? '请选择' : ''"
+              placeholder="请选择"
             />
           </el-form-item>
 
@@ -60,7 +60,7 @@
               v-model="formData.endTime"
               type="date"
               :editable="false"
-              :placeholder="!statusDisable ? '请选择' : ''"
+              placeholder="请选择"
             />
           </el-form-item>
 
@@ -82,7 +82,6 @@
               :fileSize="1024"
               :fileType="fileType"
               :isShowTip="false"
-              @updateFileList="updateFileList"
               :fileList="fileMsg"
             >
             </fileUpload>
@@ -98,6 +97,7 @@
         <el-form :model="backData" ref="backDataRef" :rules="rules">
           <el-form-item label="附件" label-width="100px" prop="fileList">
             <fileUpload
+             style="width: 100%"
               :fileSize="1024"
               :fileType="fileType"
               :fileList="fileList"
@@ -118,8 +118,10 @@
     <div class="form-bottom">
       <div class="form-bottom">
         <div class="bottom-btns">
-          <el-button class="purple" @click="cancel">取消</el-button>
-          <el-button class="radioGreen" @click="submitForm">提交</el-button>
+          <el-button type="info" class="purple" @click="cancel">取消</el-button>
+          <el-button type="primary" class="btnGreen" @click="submitForm"
+            >提交</el-button
+          >
         </div>
       </div>
     </div>
@@ -157,7 +159,18 @@ const data = reactive({
   },
 });
 const { formData, backData, rules } = toRefs(data);
-
+const fileType = ref([
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "pdf",
+  "jpg",
+  "png",
+  "zip",
+  "ppt",
+  "pptx",
+]);
 // 响应式变量
 const fileList = ref([]); //回传附件
 const fileMsg = ref([]); //素材附件

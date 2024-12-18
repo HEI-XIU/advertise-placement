@@ -148,16 +148,16 @@
     }
   }
 }
-.radioGreen {
+.btnGreen {
   //   display: flex;
-  background-color: rgb(103, 192, 103);
+  // background-color: #e1e5fa;
   border-radius: 8px;
   color: aliceblue;
   justify-content: center;
   width: 80px;
   font-weight: bold;
 }
-.radioRed {
+.btnRed {
   //   display: flex;
   background-color: lightcoral;
   border-radius: 8px;
@@ -173,6 +173,7 @@
   color: aliceblue;
   width: 80px;
   font-weight: bold;
+  border: none;
 }
 .form-bottom {
   height: 40px;

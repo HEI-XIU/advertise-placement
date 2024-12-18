@@ -41,12 +41,12 @@
           plain
           icon="Plus"
           @click="handleAdd"
-          >新增</el-button
+          >订单发起</el-button
         >
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="noticeList">
+    <el-table :data="noticeList">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <el-table-column label="序号" align="center" type="index" width="50" />
       <el-table-column
@@ -59,7 +59,7 @@
         label="订单名称"
         align="center"
         prop="title"
-        width="100"
+        :show-overflow-tooltip="true"
       />
       <el-table-column
         label="投放开始时间"
@@ -131,18 +131,28 @@
           >
           <el-button
             link
-            type="primary"
-            icon="Detail"
-            @click="handleReview(scope.row)"
-            >查看</el-button
+            type="danger"
+            icon="Delete"
+            @click="handleDelete(scope.row)"
+            v-if=" scope.row.status == 0 || scope.row.status == 2"
+            >删除</el-button
+          >
+          <el-button
+            link
+            type="danger"
+            icon="RefreshLeft"
+            @click="handleRevoke(scope.row)"
+            v-if=" scope.row.level == 2 && scope.row.status == 1"
+            >撤回</el-button
           >
           <el-button
             link
             type="primary"
-            icon="Delete"
-            @click="handleDelete(scope.row)"
-            >删除</el-button
+            icon="View"
+            @click="handleReview(scope.row)"
+            >查看</el-button
           >
+          
         </template>
       </el-table-column>
     </el-table>
@@ -158,7 +168,7 @@
 </template>
 
 <script setup name="OrderList">
-import { getorderList, deleteOrder } from "@/api/orderApi/addOrder";
+import { getorderList, deleteOrder ,withdraw} from "@/api/orderApi/addOrder";
 import { onMounted } from "vue";
 
 const router = useRouter();
@@ -194,7 +204,6 @@ const getOrderList = () => {
   getorderList(params).then((res) => {
     noticeList.value = res.data.list;
     total.value = res.data.total;
-    console.log(res);
   });
 };
 
@@ -226,6 +235,21 @@ const handleReview = (row) => {
     query: { id: row.id, type: "review" },
   });
 };
+const handleRevoke = (row) => {
+    const orderNo = row.orderNo;
+  proxy.$modal
+    .confirm('是否确认撤回订单编号为"' + orderNo + '"的数据项？')
+    .then(function () {
+      return withdraw({ orderId: row.id });
+    })
+    .then(() => {
+      getOrderList();
+      proxy.$modal.msgSuccess("撤回成功");
+    })
+    // .catch((err) => {
+    //     proxy.$modal.msgError(err);
+    // });
+};
 // 删除
 const handleDelete = (row) => {
   const orderNo = row.orderNo;
@@ -238,7 +262,9 @@ const handleDelete = (row) => {
       getOrderList();
       proxy.$modal.msgSuccess("删除成功");
     })
-    .catch(() => {});
+    .catch((err) => {
+        proxy.$modal.msgError(err);
+    });
 };
 </script>
 

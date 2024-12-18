@@ -1,34 +1,36 @@
 <template>
   <div class="upload-file">
-    <el-upload
-      multiple
-      action=""
-      :http-request="httpRequest"
-      :before-upload="handleBeforeUpload"
-      :file-list="fileList"
-      :limit="limit"
-      :on-error="handleUploadError"
-      :on-exceed="handleExceed"
-      :on-success="handleUploadSuccess"
-      :show-file-list="false"
-      :headers="headers"
-      class="upload-file-uploader"
-      ref="fileUpload"
-      v-if="showTip"
-    >
-      <!-- 上传按钮 -->
-      <el-button type="primary" >选取文件</el-button>
-    </el-upload>
-    <!-- 上传提示 -->
-    <div class="el-upload__tip" v-if="showTip">
-      请上传
-      <template v-if="fileSize">
-        大小不超过 <b style="color: #f56c6c">{{ fileSize }}MB</b>
-      </template>
-      <template v-if="fileType">
-        格式为 <b style="color: #f56c6c">{{ fileType.join("/") }}</b>
-      </template>
-      的文件
+    <div class="upload-file-tip">
+      <el-upload
+        multiple
+        action=""
+        :http-request="httpRequest"
+        :before-upload="handleBeforeUpload"
+        :file-list="fileList"
+        :limit="limit"
+        :on-error="handleUploadError"
+        :on-exceed="handleExceed"
+        :on-success="handleUploadSuccess"
+        :show-file-list="false"
+        :headers="headers"
+        class="upload-file-uploader"
+        ref="fileUpload"
+        v-if="showTip"
+      >
+        <!-- 上传按钮 -->
+        <el-button type="primary">选取文件</el-button>
+      </el-upload>
+      <!-- 上传提示 -->
+      <div class="el-upload__tip" v-if="showTip">
+        请上传
+        <template v-if="fileSize">
+          大小不超过 <b style="color: #f56c6c">{{ fileSize }}MB</b>
+        </template>
+        <template v-if="fileType">
+          格式为 <b style="color: #f56c6c">{{ fileType.join("/") }}</b>
+        </template>
+        的文件
+      </div>
     </div>
     <!-- 文件列表 -->
     <transition-group
@@ -46,9 +48,9 @@
           :underline="false"
           target="_blank"
         >
-          <span class="el-icon-document"> {{ file.fileName}} </span>
+          <span class="el-icon-document"> {{ file.fileName }} </span>
         </el-link>
-        <div class="ele-upload-list__item-content-action">
+        <div class="ele-upload-list__item-content-action" v-if="showTip">
           <el-link :underline="false" @click="handleDelete(index)" type="danger"
             >删除</el-link
           >
@@ -60,7 +62,7 @@
 
 <script setup>
 import { getToken } from "@/utils/auth";
-import {uploadFile} from "@/api/orderApi/addOrder";
+import { uploadFile } from "@/api/orderApi/addOrder";
 
 const props = defineProps({
   modelValue: [String, Object, Array],
@@ -114,18 +116,18 @@ const baseUrl = import.meta.env.VITE_APP_BASE_API;
 // ); // 上传文件服务器地址
 const headers = ref({ Authorization: "Bearer " + getToken() });
 // const fileList = ref([]);
-const fileListMsg = ref([])
+const fileListMsg = ref([]);
 const showTip = computed(
   () => props.isShowTip && (props.fileType || props.fileSize)
 );
 
 watch(
-      () => props.fileList,
-      (newVal) => {
-        fileListMsg.value = [...newVal];
-      },
-      { immediate: true, deep: true }
-    );
+  () => props.fileList,
+  (newVal) => {
+    fileListMsg.value = [...newVal];
+  },
+  { immediate: true, deep: true }
+);
 // watch(
 //   () => props.modelValue,
 //   (val) => {
@@ -154,12 +156,12 @@ function httpRequest(request) {
   formData.append("file", request.file);
   uploadFile(formData)
     .then((res) => {
-      console.log("fileListMsg1",fileListMsg.value);
+      console.log("fileListMsg1", fileListMsg.value);
 
       fileListMsg.value.push(res.data);
-      console.log("fileListMsg2",fileListMsg.value);
+      console.log("fileListMsg2", fileListMsg.value);
       props.fileList = fileListMsg.value;
-      console.log("fileListMsg3",props.fileList);
+      console.log("fileListMsg3", props.fileList);
       emit("updateFileList", fileListMsg.value);
       proxy.$modal.closeLoading();
     })
@@ -228,7 +230,7 @@ function handleUploadSuccess(res, file) {
 
 // 删除文件
 function handleDelete(index) {
-  props.fileList.value.splice(index, 1);
+  props.fileList.splice(index, 1);
   emit("update:modelValue", listToString(props.fileList.value));
 }
 
@@ -292,4 +294,11 @@ function listToString(list, separator) {
 .ele-upload-list__item-content-action .el-link {
   margin-right: 10px;
 }
+.upload-file-tip{
+  display: flex;
+  .el-upload__tip{
+    margin: 0 0 0 10px;
+  }
+}
+
 </style>

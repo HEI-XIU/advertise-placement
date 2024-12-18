@@ -54,7 +54,7 @@
         </span> -->
       </div>
     </div>
-    <el-table v-loading="loading" :data="noticeList">
+    <el-table :data="noticeList">
       <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <el-table-column label="序号" align="center" type="index" width="50" />
       <el-table-column
@@ -123,30 +123,22 @@
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
-        width="200"
+        width="160"
       >
         <template #default="scope">
           <el-button
             link
             type="primary"
-            icon="Edit"
+            icon="Upload"
             @click="handleEdit(scope.row)"
-            >处理</el-button
+            >上传结果</el-button
           >
           <el-button
             link
             type="primary"
-            icon="Detail"
+            icon="View"
             @click="handleReview(scope.row)"
             >查看</el-button
-          >
-          <el-button
-            link
-            type="primary"
-            icon="Delete"
-            @click="handleDelete(scope.row)"
-
-            >删除</el-button
           >
         </template>
       </el-table-column>
@@ -194,7 +186,6 @@ const getBackOrderList = () => {
   getBackOrder(params).then((res) => {
     noticeList.value = res.data.list;
     total.value = res.data.total;
-    console.log(res);
   });
 };
 onMounted(() => {
@@ -227,20 +218,6 @@ const handleReview = (row) => {
     path: "/orderReceive/callbackDetail",
     query: { id: row.id, type: "review" },
   });
-};
-/** 删除按钮操作 */
-const handleDelete = (row) => {
-  const orderNo = row.orderNo;
-  proxy.$modal
-    .confirm('是否确认删除订单编号为"' + orderNo + '"的数据项？')
-    .then(() => {
-      return deleteOrder({ id: row.id });
-    })
-    .then(() => {
-      getBackOrder();
-      proxy.$modal.msgSuccess("删除成功");
-    })
-    .catch(() => {});
 };
 </script>
 
