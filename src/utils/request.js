@@ -88,7 +88,7 @@ service.interceptors.response.use(res => {
           isRelogin.show = false;
           useUserStore().logOut().then(() => {
             // location.href = '/index';
-            location.href = '/system/menu';
+            location.href = '/orderReceive/receiveList';
           
           })
       }).catch(() => {

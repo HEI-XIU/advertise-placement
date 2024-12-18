@@ -3,43 +3,45 @@
     <div class="base-info">
       <el-card class="box-card">
         <template #header>
-            <div class="clearfix">
-              <span>基本信息</span>
-            </div>
-          </template>
-        <el-form :model="formData" class="formTable" label-position="right">
-          <el-form-item label="订单编号" label-width="100px">
+          <div class="clearfix">
+            <span>基本信息</span>
+          </div>
+        </template>
+        <el-form
+          :model="formData"
+          class="formTable"
+          ref="form"
+          :disabled="true"
+        >
+          <el-form-item label="订单编号" label-width="110px" prop="orderNo">
             <el-input
-              v-model="formData.orderId"
-              placeholder="系统自动带出"
-              clearable
+              v-model="formData.orderNo"
+              placeholder="系统生成"
+              disabled
             />
           </el-form-item>
-
-          <el-form-item label="发起人" label-width="100px">
+          <el-form-item label="发起人" label-width="110px" prop="createName">
             <el-input
-              v-model="formData.createby"
-              placeholder="系统自动带出"
-              clearable
+              v-model="formData.createName"
+              placeholder="系统带出"
+              disabled
             />
           </el-form-item>
-
-          <el-form-item label="订单名称" label-width="100px">
-            <el-input
-              v-model="formData.orderName"
-              placeholder="请输入"
-              clearable
-            />
+          <el-form-item label="订单名称" label-width="110px" prop="title">
+            <el-input v-model="formData.title" placeholder="请输入" clearable />
           </el-form-item>
-          <el-form-item label="创建时间" label-width="100px">
+          <el-form-item label="创建时间" label-width="110px" prop="createTime">
             <el-input
               v-model="formData.createTime"
-              placeholder="请输入"
-              clearable
+              placeholder="系统生成"
+              disabled
             />
           </el-form-item>
-
-          <el-form-item label="投放开始时间" label-width="100px">
+          <el-form-item
+            label="投放开始时间"
+            label-width="110px"
+            prop="startTime"
+          >
             <el-date-picker
               style="width: 100%"
               v-model="formData.startTime"
@@ -49,7 +51,7 @@
             />
           </el-form-item>
 
-          <el-form-item label="投放结束时间" label-width="100px">
+          <el-form-item label="投放结束时间" label-width="110px" prop="endTime">
             <el-date-picker
               style="width: 100%"
               v-model="formData.endTime"
@@ -61,53 +63,70 @@
 
           <el-form-item
             label="需求描述"
-            label-width="100px"
+            label-width="110px"
             style="width: 100%"
+            prop="content"
           >
             <el-input
               type="textarea"
-              v-model="formData.descript"
+              v-model="formData.content"
               placeholder="请输入"
             />
           </el-form-item>
-          <el-form-item label="附件信息" prop="fileList" class="upload-item">
-            <el-upload
-              action=""
-              :http-request="beforeUpload"
-              :before-upload="uploadBefore"
-              :limit="10"
-              :on-change="handleChange"
-              :on-exceed="handleExceed"
-              :file-list="fileList"
-              :on-preview="clickFile"
-              :on-remove="removeFile"
-              :disabled="type == 'review' || !showSubmit"
+          <el-form-item label="附件" label-width="100px">
+            <fileUpload
+              style="width: 100%"
+              :fileSize="1024"
+              :fileType="fileType"
+              :isShowTip="false"
+              @updateFileList="updateFileList"
+              :fileList="fileMsg"
             >
-            </el-upload>
+            </fileUpload>
           </el-form-item>
         </el-form>
       </el-card>
-      <el-card class="box-card">
+      <el-card class="box-card" v-if="isShow">
         <template #header>
-            <div class="clearfix">
-              <span>派单处理</span>
-            </div>
-          </template>
-        <el-form>
-          <el-form-item label="操作" label-width="100px">
-            <el-radio-group v-model="formData.status">
+          <div class="clearfix">
+            <span>派单处理</span>
+          </div>
+        </template>
+        <el-form
+          :model="editData"
+          :rules="rules"
+          ref="editDataRef"
+          :disabled="isReview"
+        >
+          <!-- <el-form-item label="操作" label-width="100px" prop="operate">
+            <el-radio-group v-model="editData.operate">
               <el-radio label="1">
                 <span class="radioRed">驳回</span>
-                </el-radio>
+              </el-radio>
               <el-radio label="2">
                 <span class="radioGreen">通过</span>
-                </el-radio>
+              </el-radio>
             </el-radio-group>
+          </el-form-item> -->
+          <el-form-item
+            label="派单媒体"
+            label-width="100px"
+            prop="mediaId"
+            v-if="userStore.level == 3"
+          >
+            <el-select v-model="editData.mediaId" placeholder="请选择">
+              <el-option
+                v-for="item in mediaList"
+                :key="item.deptId"
+                :label="item.deptName"
+                :value="item.deptId"
+              ></el-option>
+            </el-select>
           </el-form-item>
-          <el-form-item label="派单意见 " label-width="100px">
+          <el-form-item label="派单意见 " label-width="100px" prop="remark">
             <el-input
               type="textarea"
-              v-model="formData.descript"
+              v-model="editData.remark"
               placeholder="请输入"
             />
           </el-form-item>
@@ -115,10 +134,10 @@
       </el-card>
       <el-card class="box-card" v-loading="tasksLoad">
         <template #header>
-            <div class="clearfix">
-              <span>处理流程</span>
-            </div>
-          </template>
+          <div class="clearfix">
+            <span>处理流程</span>
+          </div>
+        </template>
         <div class="block">
           <el-timeline>
             <el-timeline-item
@@ -130,48 +149,37 @@
               <p style="font-weight: 700">任务：{{ item.name }}</p>
               <el-card :body-style="{ padding: '10px' }">
                 <label
-                  v-if="item.assigneeUser"
+                  v-if="item.sysUser"
                   style="font-weight: normal; margin-right: 30px"
                 >
-                  审批人：{{ item.assigneeUser.nickname }}
+                  审批人：{{ item.sysUser.nickName }}
                   <el-tag type="info" size="mini">{{
-                    item.assigneeUser.deptName
+                    item.sysUser.dept.deptName
                   }}</el-tag>
                 </label>
-                <label style="font-weight: normal" v-if="item.createTime"
+                <label style="font-weight: normal" v-if="formData.createTime"
                   >创建时间：</label
                 >
                 <label style="color: #8a909c; font-weight: normal">{{
-                  item.createTime
+                  formData.createTime
                 }}</label>
                 <label
-                  v-if="item.endTime"
+                  v-if="item.createTime"
                   style="margin-left: 30px; font-weight: normal"
                   >审批时间：</label
                 >
                 <label
-                  v-if="item.endTime"
+                  v-if="item.createTime"
                   style="color: #8a909c; font-weight: normal"
                 >
-                  {{ item.endTime }}</label
+                  {{ item.createTime }}</label
                 >
-                <label
-                  v-if="item.durationInMillis"
-                  style="margin-left: 30px; font-weight: normal"
-                  >耗时：</label
-                >
-                <label
-                  v-if="item.durationInMillis"
-                  style="color: #8a909c; font-weight: normal"
-                >
-                  <!-- {{ getDateStar(item.durationInMillis) }} -->
-                </label>
-                <p v-if="item.reason">
+                <p v-if="item.remark">
                   <el-tag
                     :type="getTimelineItemType(item)"
                     class="reason-tag"
-                    :title="item.reason"
-                    >{{ item.reason }}</el-tag
+                    :title="item.remark"
+                    >{{ item.remark }}</el-tag
                   >
                 </p>
               </el-card>
@@ -184,327 +192,207 @@
     <div class="form-bottom">
       <div class="form-bottom">
         <div class="bottom-btns">
-          <el-button class="purple" @click="cancel">取消</el-button>
-          <el-button class="purple" @click="saveForm">保存</el-button>
+          <el-button class="purple" @click="cancel" type="info">取消</el-button>
           <el-button
-            class="purple"
-            @click="submitForm"
+            type="danger"
+            class="radioRed"
+            @click="reject"
             v-loading="submitLoading"
-            >提交派单</el-button
+            v-if="isShow && !isReview"
+            >驳回派单</el-button
           >
-          <!-- <el-button @click="cancel">取消</el-button>
-          <el-button class="purple" @click="revoke">撤回</el-button> -->
+          <el-button
+            type="success"
+            class="radioGreen"
+            @click="approve"
+            v-loading="submitLoading"
+            v-if="isShow && !isReview"
+            >通过派单</el-button
+          >
+          <el-button
+            type="success"
+            class="radioGreen"
+            @click="approve"
+            v-loading="submitLoading"
+            v-if="!isShow && !isReview"
+            >接收派单</el-button
+          >
         </div>
       </div>
     </div>
   </div>
 </template>
 <script setup>
-import { onMounted, ref } from "vue";
-import { uploadFile, downloadFile, submitTab } from "@/api/OrderApi/addOrder";
-const formData = ref({
-  orderId: "",
-  createby: "",
-  orderName: "",
-  createTime: ref(getCurrentTime()),
-  startTime: "",
-  endTime: "",
-  descript: "",
+import { onMounted, reactive, ref } from "vue";
+import {
+  approveOrder,
+  rejectOrder,
+  getOrderDetail,
+  getProgressList,
+  getAllMedia,
+} from "@/api/orderApi/addOrder";
+import useUserStore from "@/store/modules/user";
+const editDataRef = ref(null);
+const userStore = useUserStore();
+const { proxy } = getCurrentInstance();
+
+const data = reactive({
+  formData: {
+    id: "", //订单id
+    orderNo: "",
+    createBy: "",
+    createName: "",
+    title: "",
+    createTime: "",
+    startTime: "",
+    endTime: "",
+    content: "",
+  },
+  editData: {
+    mediaId: null,
+    deptId: null,
+    remark: "",
+    userId: userStore.id,
+    operate: "",
+  },
+  rules: {
+    operate: [{ required: true, message: "请选择操作", trigger: "blur" }],
+    remark: [{ required: true, message: "请输入派单意见", trigger: "blur" }],
+    mediaId: [{ required: true, message: "请选择派单媒体", trigger: "blur" }],
+  },
 });
-//文件上传
-// 响应式变量
-const fileList = ref([]);
+
+const { formData, editData, rules } = toRefs(data);
+
+const mediaList = ref([]);
 const fileMsg = ref([]);
+const router = useRouter();
+const type = ref(""); // 可能是 'review' 或其他
+const isShow = ref(userStore.level != 4 ? true : false);
+const isReview = ref(false);
+
 const submitLoading = ref(false);
 const tasksLoad = ref(false);
-const tasks = ref([
-  {
-    id: "499e2e2a-b15e-11ef-b7d9-4a07930dfe67",
-    name: "商机申请发起",
-    claimTime: null,
-    createTime: "2024-12-03 18:06:39",
-    suspensionState: null,
-    no: null,
-    processInstanceId: "f65dd86d-b150-11ef-b7d9-4a07930dfe67",
-    processDefinitionKey: null,
-    processInstance: {
-      id: "f65dd86d-b150-11ef-b7d9-4a07930dfe67",
-      name: "商机申请",
-      startUserId: 182,
-      startUserNickname: "测试用户",
-      processDefinitionId:
-        "oa_opportunity:5:4c86c157-95df-11ef-802a-eeeeeeeeeeee",
-      businessStatus: "0",
-    },
-    endTime: null,
-    durationInMillis: null,
-    result: 1,
-    reason: null,
-    definitionKey: "Activity_1h0js95",
-    assigneeUser: {
-      id: 182,
-      nickname: "测试用户",
-      deptId: 54,
-      deptName: "研发部门",
-    },
-    parentTaskId: null,
-    children: null,
-  },
-  {
-    id: "f680a2c1-b150-11ef-b7d9-4a07930dfe67",
-    name: "部门负责人审批",
-    claimTime: null,
-    createTime: "2024-12-03 16:31:16",
-    suspensionState: null,
-    no: null,
-    processInstanceId: "f65dd86d-b150-11ef-b7d9-4a07930dfe67",
-    processDefinitionKey: null,
-    processInstance: {
-      id: "f65dd86d-b150-11ef-b7d9-4a07930dfe67",
-      name: "商机申请",
-      startUserId: 182,
-      startUserNickname: "测试用户",
-      processDefinitionId:
-        "oa_opportunity:5:4c86c157-95df-11ef-802a-eeeeeeeeeeee",
-      businessStatus: "0",
-    },
-    endTime: "2024-12-03 18:06:39",
-    durationInMillis: 5722899,
-    result: 5,
-    reason: "发票信息",
-    definitionKey: "Activity_033jtv4",
-    assigneeUser: {
-      id: 278,
-      nickname: "宋福康",
-      deptId: 54,
-      deptName: "研发部门",
-    },
-    parentTaskId: null,
-    children: null,
-  },
-  {
-    id: "f65e9bc7-b150-11ef-b7d9-4a07930dfe67",
-    name: "商机申请发起",
-    claimTime: null,
-    createTime: "2024-12-03 16:31:16",
-    suspensionState: null,
-    no: null,
-    processInstanceId: "f65dd86d-b150-11ef-b7d9-4a07930dfe67",
-    processDefinitionKey: null,
-    processInstance: {
-      id: "f65dd86d-b150-11ef-b7d9-4a07930dfe67",
-      name: "商机申请",
-      startUserId: 182,
-      startUserNickname: "测试用户",
-      processDefinitionId:
-        "oa_opportunity:5:4c86c157-95df-11ef-802a-eeeeeeeeeeee",
-      businessStatus: "0",
-    },
-    endTime: "2024-12-03 16:31:16",
-    durationInMillis: 220,
-    result: 2,
-    reason: "创建任务",
-    definitionKey: "Activity_1h0js95",
-    assigneeUser: {
-      id: 182,
-      nickname: "测试用户",
-      deptId: 54,
-      deptName: "研发部门",
-    },
-    parentTaskId: null,
-    children: null,
-  },
-]);
-
-// 获取当前时间的函数
-function getCurrentTime() {
-  const date = new Date();
-  return `${date.getFullYear()}-${(date.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} ${date
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}`;
-}
-
-// 自定义上传逻辑
-const beforeUpload = (params) => {
-  let formData = new FormData();
-  formData.append("file", params.file);
-  // 上传文件
-  uploadFile(formData).then((res) => {
-    if (res.success) {
-      Message.success("文件解析成功！");
-      this.fileMsg.push(res.data);
-    } else {
-      Message.error("导入解析失败！");
-    }
-    // this.fileList = [];
-  });
-};
-
-const uploadBefore = (file) => {
-  let suffix = file.name.substring(file.name.lastIndexOf(".") + 1);
-  if (
-    !(
-      suffix === "doc" ||
-      suffix === "docx" ||
-      suffix === "xls" ||
-      suffix === "xlsx" ||
-      suffix === "pdf" ||
-      suffix === "jpg" ||
-      suffix === "png" ||
-      suffix === "xls" ||
-      suffix === "xlsx" ||
-      suffix === "et" ||
-      suffix === "html" ||
-      suffix === "pdf" ||
-      suffix === "gif" ||
-      suffix === "jpg" ||
-      suffix === "jpeg" ||
-      suffix === "bmp" ||
-      suffix === "png" ||
-      suffix === "zip" ||
-      suffix === "rar" ||
-      suffix === "ppt" ||
-      suffix === "pptx" ||
-      suffix === "txt"
-    )
-  ) {
-    Message.warning("上传文件只能是支持的格式!");
-    return false;
+const tasks = ref([]);
+onMounted(() => {
+  if (userStore.level == 3) getMediaList();
+  const detailId = router.currentRoute.value.query?.id;
+  type.value = router.currentRoute.value.query?.type;
+  isReview.value = type.value == "review" ? true : false;
+  console.log(isReview);
+  if (detailId) {
+    getDetail(detailId);
+    getTasks(detailId);
   }
-
-  const isLt2M = file.size / 1024 / 1024 < 50; //这里做文件大小限制
-  if (!isLt2M) {
-    Message.warning("上传文件大小不能超过 50MB!");
-    return false;
+});
+const getDetail = (detailId) => {
+  if (detailId) {
+    getOrderDetail({ id: detailId })
+      .then((res) => {
+        formData.value.id = res.data.id;
+        formData.value.createName = res.data.createName;
+        formData.value.orderNo = res.data.orderNo;
+        formData.value.title = res.data.title;
+        formData.value.createTime = res.data.createTime;
+        formData.value.startTime = res.data.startTime;
+        formData.value.endTime = res.data.endTime;
+        formData.value.content = res.data.content;
+        fileMsg.value = res.data.orderFiles;
+        // editData.value.remark = res.data.remark
+        editData.value.mediaId = res.data?.mediaId;
+      })
+      .catch((err) => {
+        proxy.$modal.msgError(err.data.msg);
+      });
   }
-  return true;
 };
-
-// 其他事件处理函数
-const handleChange = (file, fileList) => {
-  fileList = fileList;
-};
-
-const handlePreview = (file) => {
-  console.log("预览文件", file);
-};
-
-//点击文件
-const clickFile = (file) => {
-  let fileUrl = "";
-  let fileName = "";
-  fileMsg.forEach((item) => {
-    if (file.name == item.fileName) {
-      fileUrl = item.fileUrl;
-      fileName = item.fileName;
-    }
+const getMediaList = () => {
+  getAllMedia().then((res) => {
+    mediaList.value = res.data;
   });
-  downloadFile(fileUrl)
-    .then((res) => {
-      var debug = res;
-      if (debug) {
-        var elink = document.createElement("a");
-        elink.download = fileName;
-        elink.style.display = "none";
-        var blob = new Blob([debug], { type: "application/x-msdownload" });
-        elink.href = URL.createObjectURL(blob);
-        document.body.appendChild(elink);
-        elink.click();
-        document.body.removeChild(elink);
-      } else {
-        this.$message.error("下载异常");
-      }
-    })
-    .catch((err) => {});
 };
-//移除文件
-const removeFile = (file) => {
-  let index = null;
-  fileMsg.forEach((item, i) => {
-    if (file.name == item.fileName) {
-      index = i;
-    }
+const getTasks = (detailId) => {
+  getProgressList({ orderId: detailId }).then((res) => {
+    const foundElement = res.data.find(
+      (element) => element.userId === userStore.id
+    );
+    console.log(foundElement);
+    editData.value.remark = foundElement?.remark;
+    tasks.value = res.data;
   });
-  fileMsg.splice(index, 1);
 };
-const handleExceed = () => {
-  Message.warning("上传文件数量不能超过10个!");
-};
-function formatDate(date) {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 月份从 0 开始，需要 +1
-  const day = date.getDate().toString().padStart(2, "0"); // 日期补零
 
-  return `${year}-${month}-${day}`;
-}
-//提交
-const submitForm = () => {
-  console.log(formatDate(formData.value.startTime));
+const reject = () => {
   let params = {
-    amount: "",
-    assignedMedia: "",
-    content: formData.value.descript,
-    createBy: 1001,
-    createTime: formData.value.createTime,
-    currentHandler: "",
-    endTime: formatDate(formData.value.endTime),
-    id: "",
-    isBack: "",
-    level: "",
-    orderNo: "ORD123456789",
-    remark: "",
-    startTime: formatDate(formData.value.startTime),
-    status: "",
-    title: formData.value.orderName,
-    updateBy: "",
-    updateTime: "",
+    id: formData.value.id,
+    mediaId: editData.value.mediaId,
+    deptId: editData.value.mediaId,
+    remark: editData.value.remark,
+    userId: editData.value.userId,
   };
-  console.log(params);
+  rejectOrder(params)
+    .then((res) => {
+      cancel();
+      proxy.$modal.msgSuccess("驳回成功");
+    })
+    .catch((err) => {
+      proxy.$modal.msgError(err.data.msg);
+    });
 };
-onMounted(() => {});
+const approve = () => {
+  let params = {
+    id: formData.value.id,
+    mediaId: editData.value.mediaId,
+    deptId: editData.value.mediaId,
+    remark: editData.value.remark,
+    userId: editData.value.userId,
+  };
+  approveOrder(params)
+    .then((res) => {
+      cancel();
+      proxy.$modal.msgSuccess("派单成功");
+    })
+    .catch((err) => {
+      proxy.$modal.msgError(err.data.msg);
+    });
+};
+const cancel = () => {
+  router.go(-1);
+};
 
 const getTimelineItemIcon = (item) => {
-  if (item.result === 1) {
-    return "el-icon-time";
+  if (item.nameKey === 0) {
+    return "Location";
   }
-  if (item.result === 2) {
-    return "el-icon-check";
+  if (item.nameKey === 1) {
+    return "Check";
   }
-  if (item.result === 3) {
-    return "el-icon-close";
+  if (item.nameKey === 2) {
+    return "Close";
   }
-  if (item.result === 4) {
-    return "el-icon-remove-outline";
+  if (item.nameKey === 3) {
+    return "Check";
   }
-  if (item.result === 5) {
-    return "el-icon-back";
+  if (item.nameKey === 4) {
+    return "Check";
   }
   return "";
 };
 const getTimelineItemType = (item) => {
-  if (item.result === 1) {
-    return "primary";
-  }
-  if (item.result === 2) {
-    return "success";
-  }
-  if (item.result === 3) {
-    return "danger";
-  }
-  if (item.result === 4) {
+  if (item.nameKey === 0) {
     return "info";
   }
-  if (item.result === 5) {
+  if (item.nameKey === 1) {
     return "warning";
   }
-  if (item.result === 6) {
-    return "default";
+  if (item.nameKey === 2) {
+    return "danger";
+  }
+  if (item.nameKey === 3) {
+    return "primary";
+  }
+  if (item.nameKey === 4) {
+    return "success";
   }
   return "";
 };
@@ -521,26 +409,30 @@ const getTimelineItemType = (item) => {
   width: 100%;
 }
 .box-card {
-    width: 100%;
-    box-sizing: border-box;
-    box-shadow: none;
-    border-radius: 0;
-    border:none;
-    .clearfix {
-      span {
-        font-size: 16px;
-        padding-bottom: 4px;
-        color: #3d3d3d;
-        &::before {
-          padding-right: 5px;
-        }
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: none;
+  border-radius: 0;
+  border: none;
+  .clearfix {
+    span {
+      font-size: 16px;
+      padding-bottom: 4px;
+      color: #3d3d3d;
+      &::before {
+        padding-right: 5px;
       }
     }
   }
+}
 
-.base-info .formTable {
-  display: flex;
-  flex-wrap: wrap;
+.base-info {
+  height: 85vh;
+  overflow: auto;
+  .formTable {
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 .formTable .el-form-item {
@@ -553,77 +445,7 @@ const getTimelineItemType = (item) => {
   width: 100%; /* 如果最后一项需要占满一行 */
 }
 
-.title {
-  width: 100%;
-}
-.title-con {
-  width: 100%;
-  margin: 0 0 0 2%;
-}
-
 .formTable {
   width: 100%;
-}
-
-.radioGreen{
-    display: flex;
-    background-color: rgb(103, 192, 103); 
-    border-radius: 10%;
-    color: aliceblue;
-    justify-content: center;
-    width: 50px;
-    height: 30px;
-    font-weight: bold;
-}
-.radioRed{
-    display: flex;
-    background-color: lightcoral; 
-    border-radius: 10%;
-    color: aliceblue;
-    justify-content: center;
-    width: 50px;
-    height: 30px;
-    font-weight: bold;
-}
-/*.base-info {
-  padding-left: 0;
-  padding-right: 0;
-
-  .el-input__inner {
-    height: 40px !important;
-  }
-
-  .el-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-
-  .el-col {
-    display: flex;
-    flex: 1;
-    justify-content: flex-start;
-  }
-
-
-  .el-input_icon.el-range_icon.el-icon-date {
-    width: 200px !important;
-    background: #00afff !important;
-  }
-}
-*/
-.form-bottom {
-  width: 100%;
-  background: #ffffff;
-}
-.bottom-btns {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-.purple {
-  width: 100px;
-  background-color: #169bd5;
-  color: #ffffff;
 }
 </style>

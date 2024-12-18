@@ -1,478 +1,330 @@
 <template>
-    <div class="container">
-        <div class="title">
-            <div class="title-con">订单发起</div>
-            <el-divider />
-        </div>
-      <div class="form">
-        <el-form :model="formData" ref="form" label-position="right" :rules = "rules">
-          <div class="base-info">
-            <!-- 第一行 -->
-            <el-row :gutter="30">
-              <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="订单编号" label-width="100px" prop="orderId">
-                  <el-input style="width: 100%;" disabled v-model="formData.orderId" placeholder="系统自动带出" clearable />
-                </el-form-item>
-              </el-col>
-  
-              <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="发起人" label-width="100px" prop="createBy">
-                  <el-input style="width: 100%;" disabled v-model="formData.createBy" placeholder="系统自动带出" clearable />
-                </el-form-item>
-              </el-col>
-            </el-row>
-  
-            <!-- 第二行 -->
-            <el-row :gutter="30">
-              <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="订单名称" label-width="100px" prop="orderName">
-                  <el-input style="width: 100%;" v-model="formData.orderName" placeholder="请输入" clearable />
-                </el-form-item>
-              </el-col>
-  
-              <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="创建时间" label-width="100px" prop="createTime">
-                  <el-input style="width: 100%;" v-model="formData.createTime" placeholder="请输入" clearable />
-                </el-form-item>
-              </el-col>
-            </el-row>
-  
-            <!-- 第三行 -->
-            <el-row :gutter="30">
-              <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="投放开始时间" label-width="110px" prop="startTime">
-                  <el-date-picker
-                  style="width: 100%;"
+  <div class="container">
+    <!-- <div class="title">
+        <div class="title-con">订单发起</div>
+      </div> -->
+    <div class="base-info">
+      <el-card class="box-card">
+        <template #header>
+          <div class="clearfix">
+            <span>基本信息</span>
+          </div>
+        </template>
+        <el-form
+          :model="formData"
+          class="formTable"
+          label-position="right"
+          :rules="rules"
+          ref="form"
+          :disabled="isDisabled"
+        >
+          <el-form-item label="订单编号" label-width="110px" prop="orderNo">
+            <el-input
+              v-model="formData.orderNo"
+              placeholder="系统生成"
+              disabled
+            />
+          </el-form-item>
+          <el-form-item label="发起人" label-width="110px" prop="createName">
+            <el-input
+              v-model="formData.createName"
+              placeholder="系统带出"
+              disabled
+            />
+          </el-form-item>
+          <el-form-item label="订单名称" label-width="110px" prop="title">
+            <el-input v-model="formData.title" placeholder="请输入" clearable />
+          </el-form-item>
+          <el-form-item label="创建时间" label-width="110px" prop="createTime">
+            <el-input
+              v-model="formData.createTime"
+              placeholder="系统生成"
+              disabled
+            />
+          </el-form-item>
+
+          <el-form-item
+            label="投放开始时间"
+            label-width="110px"
+            prop="startTime"
+          >
+            <el-date-picker
+              style="width: 100%"
               v-model="formData.startTime"
               type="date"
               :editable="false"
               :placeholder="!statusDisable ? '请选择' : ''"
             />
-                </el-form-item>
-              </el-col>
-  
-              <el-col :xs="24" :sm="12" :md="11">
-                <el-form-item label="投放结束时间" label-width="110px" prop="endTime">
-                  <el-date-picker
-                   style="width: 100%;"
+          </el-form-item>
+
+          <el-form-item label="投放结束时间" label-width="110px" prop="endTime">
+            <el-date-picker
+              style="width: 100%"
               v-model="formData.endTime"
               type="date"
               :editable="false"
               :placeholder="!statusDisable ? '请选择' : ''"
             />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-form-item label="需求描述" label-width="100px" prop="descript">
-                  <el-input style="width: 100%;" type="textarea" v-model="formData.descript" placeholder="请输入" />
-                </el-form-item>
-                <el-form-item
-            label="附件信息"
-            prop="fileList"
+          </el-form-item>
+
+          <el-form-item
+            label="需求描述"
+            label-width="110px"
+            style="width: 100%"
+            prop="content"
           >
+            <el-input
+              type="textarea"
+              v-model="formData.content"
+              placeholder="请输入"
+            />
           </el-form-item>
-          <el-form-item class="upload-item">
-            <!-- <FileUpload
-            /> -->
-            <el-upload
-              action=""
-              :http-request="beforeUpload"
-              :before-upload="uploadBefore"
-              :limit="10"
-              :on-change="handleChange"
-              :on-exceed="handleExceed"
-              :file-list="fileList"
-              :on-preview="clickFile"
-              :on-remove="removeFile"
-              :disabled="type == 'review' || !showSubmit"
+          <el-form-item label="附件" label-width="100px">
+            <fileUpload
+              style="width: 100%"
+              :fileSize="1024"
+              :fileType="fileType"
+              @updateFileList="updateFileList"
+              :fileList="fileMsg"
             >
-              <el-button
-                icon="el-icon-plus"
-                size="mini"
-                type="primary"
-                :disabled="false"
-              >点击上传附件
-              </el-button>
-              <div slot="tip" class="el-upload__tip">
-                限制文件大小：50M，限制文件总数量：10个，格式：txt,doc,docx,xls,xlsx,et,html,pdf,gif,jpg,jpeg,bmp,png,zip,rar,ppt,pptx
-              </div>
-            </el-upload>
+            </fileUpload>
           </el-form-item>
-          </div>
         </el-form>
-      </div>
-      <div class="form-bottom">
+      </el-card>
+    </div>
+
+    <div class="form-bottom">
       <div class="form-bottom">
         <div class="bottom-btns">
           <el-button class="purple" @click="cancel">取消</el-button>
-          <el-button class="purple" @click="saveForm">保存</el-button>
-          <el-button class="purple" @click="submitForm" v-loading="submitLoading">提交派单</el-button>
-          <!-- <el-button @click="cancel">取消</el-button>
-          <el-button class="purple" @click="revoke">撤回</el-button> -->
+          <el-button class="radioGreen" @click="saveForm">保存</el-button>
+          <el-button
+            class="radioGreen"
+            @click="submitForm"
+            v-loading="submitLoading"
+            >派单</el-button
+          >
         </div>
       </div>
     </div>
-    </div>
-  </template>
+  </div>
+</template>
 <script setup>
-import { onMounted, ref } from 'vue';
-import { uploadFile,downloadFile,submitorderTab,saveorderTab,getuserinfo } from '@/api/OrderApi/addOrder';
-import {ElMessage} from "element-plus";
-// import FileUpload from "@/components/FileUpload/index.vue";
+import { onMounted, ref } from "vue";
+import {
+  submitorderTab,
+  saveorderTab,
+  getuserinfo,
+  getOrderDetail,
+} from "@/api/orderApi/addOrder";
+import useUserStore from "@/store/modules/user";
+const fileType = ref([
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "pdf",
+  "jpg",
+  "png",
+  "zip",
+  "ppt",
+  "pptx",
+]);
+const router = useRouter();
+const userStore = useUserStore();
 
-const router = useRouter()
 const formData = ref({
-    userId:'',
-    orderId:'',
-    createBy:'',
-    orderName:'',
-    createTime:ref(getCurrentTime()),
-    startTime:'',
-    endTime:'',
-    descript:'',
-})
-
+  id: "", //订单id
+  orderNo: "",
+  createBy: userStore.id,
+  createName: userStore.nickName,
+  title: "",
+  createTime: "",
+  startTime: "",
+  endTime: "",
+  content: "",
+});
 // 校验规则对象
-const form = ref(null)
+const form = ref(null);
 const rules = {
-  // orderId: [
-  //   { required: true, message: '订单编号不能为空', trigger: 'blur' }
-  // ],
-  createBy: [
-    { required: true, message: '发起人不能为空', trigger: 'blur' }
-  ],
-  orderName: [
-    { required: true, message: '订单名称不能为空', trigger: 'blur' }
-  ],
-  createTime: [
-    { required: true, message: '创建时间不能为空', trigger: 'blur' }
-  ],
+  title: [{ required: true, message: "订单名称不能为空", trigger: "blur" }],
+  // createTime: [{ required: true, message: "创建时间不能为空", trigger: "blur" },],
   startTime: [
-    { required: true, message: '投放开始时间不能为空', trigger: 'blur' }
+    { required: true, message: "投放开始时间不能为空", trigger: "blur" },
   ],
   endTime: [
-    { required: true, message: '投放结束时间不能为空', trigger: 'blur' }
+    { required: true, message: "投放结束时间不能为空", trigger: "blur" },
   ],
-  descript: [
-    { required: true, message: '需求描述不能为空', trigger: 'blur' }
-  ]
+  content: [{ required: true, message: "需求描述不能为空", trigger: "blur" }],
 };
-
-//获取当前用户信息
-const getuserInfo = () => {
-  getuserinfo().then(res => {
-    console.log(res)
-    formData.value.createBy = res.user.nickName
-    formData.value.userId = res.user.userId
-  })
-};
-
-//文件上传
 // 响应式变量
-const showSubmit = ref(true);
-const type = ref(''); // 上传类型，可能是 'review' 或其他
+const type = ref(""); // 上传类型，可能是 'review' 或其他
+const isDisabled = ref(type == "review" ? true : false);
 const fileList = ref([]);
 const fileMsg = ref([]);
 
-// 获取当前时间的函数
-function getCurrentTime() {
-  const date = new Date();
-  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+onMounted(() => {
+  const detailId = router.currentRoute.value.query?.id;
+  type.value = router.currentRoute.value.query?.type;
+  // getuserInfo();
+  if (detailId) getDetail(detailId);
+});
+
+//获取当前用户信息
+// const getuserInfo = () => {
+//   getuserinfo().then((res) => {
+//     formData.value.createBy = res.user.userId;
+//     formData.value.createName = res.user.nickName;
+//   });
+// };
+
+const getDetail = (detailId) => {
+  if (detailId) {
+    getOrderDetail({ id: detailId })
+      .then((res) => {
+        formData.value.id = res.data.id;
+        formData.value.createBy = res.data.createBy;
+        formData.value.orderNo = res.data.orderNo;
+        formData.value.title = res.data.title;
+        formData.value.createTime = res.data.createTime;
+        formData.value.startTime = res.data.startTime;
+        formData.value.endTime = res.data.endTime;
+        formData.value.content = res.data.content;
+        fileMsg.value = res.data.orderFiles;
+      })
+      .catch((err) => {
+        proxy.$modal.msgError(err.data.msg);
+      });
+  }
 };
 
-
-// 自定义上传逻辑
- const beforeUpload =(params) => {
-      let formData = new FormData();
-      formData.append("file", params.file);
-      // 上传文件
-      uploadFile(formData).then((res) => {
-        if (res.success) {
-          ElMessage({
-            message:'文件解析成功!',
-            type:'success',
-          })
-          // Message.success("文件解析成功！");
-          fileMsg.value.push(res.data);
-        } else {
-          // Message.error("导入解析失败！");
-          ElMessage({
-            message:'导入解析失败!',
-            type:'error',
-          })
-        }
-        // this.fileList = [];
-      });
-    };
-
-    const uploadBefore = (file) => {
-      let suffix = file.name.substring(file.name.lastIndexOf(".") + 1);
-      if (
-        !(
-          suffix === "doc" ||
-          suffix === "docx" ||
-          suffix === "xls" ||
-          suffix === "xlsx" ||
-          suffix === "pdf" ||
-          suffix === "jpg" ||
-          suffix === "png" ||
-          suffix === "xls" ||
-          suffix === "xlsx" ||
-          suffix === "et" ||
-          suffix === "html" ||
-          suffix === "pdf" ||
-          suffix === "gif" ||
-          suffix === "jpg" ||
-          suffix === "jpeg" ||
-          suffix === "bmp" ||
-          suffix === "png" ||
-          suffix === "zip" ||
-          suffix === "rar" ||
-          suffix === "ppt" ||
-          suffix === "pptx" ||
-          suffix === "txt"||
-          suffix === "mp3"||
-          suffix === "mp4"
-        )
-      ) {
-        ElMessage({
-            message:'上传文件只能是支持的格式!',
-            type:'warning',
-          })
-        // Message.warning("上传文件只能是支持的格式!");
-        return false;
-      }
-
-      const isLt2M = file.size / 1024 / 1024 < 50; //这里做文件大小限制
-      if (!isLt2M) {
-        ElMessage({
-            message:'上传文件大小不能超过 50MB!',
-            type:'warning',
-          })
-        // Message.warning("上传文件大小不能超过 50MB!");
-        return false;
-      }
-      return true;
-    };
-
-// 其他事件处理函数
- const handleChange = (file, fileList) => {
-      fileList = fileList;
-    };
-
-const handlePreview = (file) => {
-  console.log('预览文件', file);
+const updateFileList = (fileListMsg) => {
+  fileMsg.value = fileListMsg;
 };
 
-  //点击文件
-  const clickFile = (file) => {
-      let fileUrl = "";
-      let fileName = "";
-      fileMsg.value.forEach((item) => {
-        if (file.name == item.fileName) {
-          fileUrl = item.fileUrl;
-          fileName = item.fileName;
-        }
-      });
-      downloadFile(fileUrl)
-        .then((res) => {
-          var debug = res;
-          if (debug) {
-            var elink = document.createElement("a");
-            elink.download = fileName;
-            elink.style.display = "none";
-            var blob = new Blob([debug], {type: "application/x-msdownload"});
-            elink.href = URL.createObjectURL(blob);
-            document.body.appendChild(elink);
-            elink.click();
-            document.body.removeChild(elink);
-          } else {
-           ElMessage.error('下载异常')
-            // this.$message.error("下载异常");
-          }
-        })
-        .catch((err) => {
-        });
-        console.log(fileMsg.value)
-    };
-        //移除文件
-        const removeFile = (file) => {
-      let index = null;
-      fileMsg.value.forEach((item, i) => {
-        if (file.name == item.fileName) {
-          index = i;
-        }
-      });
-      fileMsg.value.splice(index, 1);
-      console.log(fileMsg.value)
-    };
-   const handleExceed = () => {
-    ElMessage({
-            message:'上传文件数量不能超过10个!',
-            type:'warning',
-          })
-      // Message.warning("上传文件数量不能超过10个!");
-    };
-
-    //日期格式化
-  function formatDate(date) {
+const formatDate = (date) => {
+  date = new Date(date);
   const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // 月份从 0 开始，需要 +1
-  const day = date.getDate().toString().padStart(2, '0'); // 日期补零
+  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 月份从 0 开始，需要 +1
+  const day = date.getDate().toString().padStart(2, "0"); // 日期补零
 
-  const hours = date.getHours().toString().padStart(2, '0'); // 时补零
-  const minutes = date.getMinutes().toString().padStart(2, '0'); // 分补零
-  const seconds = date.getSeconds().toString().padStart(2, '0'); // 秒补零
-  
+  const hours = date.getHours().toString().padStart(2, "0"); // 时补零
+  const minutes = date.getMinutes().toString().padStart(2, "0"); // 分补零
+  const seconds = date.getSeconds().toString().padStart(2, "0"); // 秒补零
+
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
-//取消
-const cancel = () => {
-  router.push('/order/myorder')
 }
 
 // 保存方法
 const saveForm = () => {
-  // 调用表单的 validate 方法
   form.value.validate((valid) => {
     if (valid) {
       // 校验通过，执行保存逻辑
       let params = {
-        amount: '',
-        assignedMedia: '',
-        content: formData.value.descript,
-        createBy: formData.value.userId,
+        id: formData.value.id,
+        content: formData.value.content,
+        createBy: formData.value.createBy,
+
         createTime: formData.value.createTime,
-        currentHandler: '',
-        endTime: formatDate(formData.value.endTime),
-        id: '',
-        isBack: '',
-        level: '',
-        orderNo: 'ORD123456789',
-        remark: '',
         startTime: formatDate(formData.value.startTime),
-        status: '',
-        title: formData.value.orderName,
-        updateBy: '',
-        updateTime: '',
-        orderFiles:fileMsg.value,
+        endTime: formatDate(formData.value.endTime),
+        orderNo: formData.value.orderNo,
+        title: formData.value.title,
+        orderFiles: fileMsg.value,
       };
-
-      saveorderTab(params).then((res) => {
-        console.log(res);
-        if (res.code === 200) {
-          router.push('/order/myorder');
-        }
-      }).catch(() => {
-        // 错误处理
-      });
-
-      console.log(params);
-    } else {
-      // 校验不通过，输出提示
-      console.log('表单验证失败');
+      saveorderTab(params)
+        .then(() => {
+          cancel();
+          proxy.$modal.msgSuccess("保存成功");
+        })
+        .catch(() => {
+          proxy.$modal.msgError("保存失败");
+        });
     }
   });
 };
 
-    //提交
-    const submitForm = () => {
-        console.log(formatDate(formData.value.startTime))
-        let params = {
-            amount: '',
-            assignedMedia: '',
-            content: formData.value.descript,
-            createBy: formData.value.userId,
-            createTime: formData.value.createTime,
-            currentHandler: '',
-            endTime: formatDate(formData.value.endTime),
-            id: '',
-            isBack: '',
-            level: '',
-            orderNo: "ORD123456789",
-            remark: '',
-            startTime: formatDate(formData.value.startTime),
-            status: '',
-            title: formData.value.orderName,
-            updateBy: '',
-            updateTime: '',
-            orderFiles:fileMsg.value,
-        }
-        submitorderTab(params).then( (res) => {
-          console.log(res)
-          if(res.code==200){ 
-            router.push('/order/myorder')
-          }
-        }).catch(() => {
-             
-            });
-        console.log(params)
+//提交
+const submitForm = () => {
+  form.value.validate((valid) => {
+    if (valid) {
+      let params = {
+        id: formData.value.id,
+        content: formData.value.content,
+        createBy: formData.value.createBy,
+        createTime: formData.value.createTime,
+        startTime: formatDate(formData.value.startTime),
+        endTime: formatDate(formData.value.endTime),
+        orderNo: formData.value.orderNo,
+        title: formData.value.title,
+        orderFiles: fileMsg.value,
+      };
+      submitorderTab(params)
+        .then(() => {
+          console.log(123);
+          cancel();
+          proxy.$modal.msgSuccess("提交成功");
+        })
+        .catch(() => {
+          proxy.$modal.msgError("提交失败");
+        });
     }
-onMounted(() => {
-  getuserInfo()
-});
+  });
+};
+const cancel = () => {
+  router.push("/order/myorder");
+};
 </script>
-<style scoped>
+<style lang="scss" scoped>
 .container {
   width: 100%;
+  background: #ffffff;
 }
-
-.title{
-    width: 100%;
+.el-divider--horizontal {
+  margin: 10px 0;
 }
-.title-con{
-    width: 100%;
-    margin: 2% 0 0 2%;
-}
-
-.form {
+.fullWith {
   width: 100%;
-  padding: 2% 5% 0 5%;
+}
+
+.box-card {
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: none;
+  border-radius: 0;
+  border: none;
+  .clearfix {
+    span {
+      font-size: 16px;
+      padding-bottom: 4px;
+      color: #3d3d3d;
+      &::before {
+        padding-right: 5px;
+      }
+    }
+  }
 }
 
 .base-info {
-  padding-left: 0;
-  padding-right: 0;
-
-  .el-input__inner {
-    height: 40px !important;
-  }
-
-  ::v-deep .el-form-item {
-    width: 100%;
-  }
-
-  .el-row {
+  height: 85vh;
+  overflow: auto;
+  .formTable {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
   }
+}
 
-  .el-col {
-    display: flex;
-    flex: 1;
-    justify-content: flex-start;
-  }
+.formTable .el-form-item {
+  width: 50%;
+  box-sizing: border-box;
+  padding-right: 20px; /* 根据需要调整间距 */
+}
 
-  /* Input icon adjustments if needed */
-  .el-input_icon.el-range_icon.el-icon-date {
-    width: 200px !important;
-    background: #00afff !important;
-  }
+.formTable .el-form-item:last-child {
+  width: 100%; /* 如果最后一项需要占满一行 */
 }
-.form-bottom{
-    width: 100%;
-    margin-top: 20%;
-}
-.bottom-btns{
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-.purple{
-    width: 100px;
-    background-color: #169BD5;
-    color: #ffffff;
+
+.formTable {
+  width: 100%;
 }
 </style>

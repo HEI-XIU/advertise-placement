@@ -97,3 +97,90 @@
   font-size: 14px;
   border-radius: 4px;
 }
+.more-select {
+  background: none;
+  padding: 0;
+  .form,
+  .table {
+    background: #fff;
+    padding: 20px;
+  }
+  .form {
+    position: relative;
+    padding: 20px 20px 8px 20px;
+    display: flex;
+    align-items: flex-start;
+    // 折叠、展开按钮
+    .select-expend {
+      display: flex;
+      align-items: center;
+      margin-top: 4px;
+      .expend {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background: #e1e5fa;
+        border-radius: 50%;
+        margin-left: 10px;
+        cursor: pointer;
+        i {
+          font-size: 20px;
+          color: #333;
+        }
+      }
+    }
+    .el-form {
+      height: 40px;
+      overflow: hidden;
+      flex: 1;
+      .el-form-item {
+        &:last-child {
+          justify-content: flex-start;
+        }
+      }
+    }
+  }
+  .table {
+    .sg-btnGrounp {
+      margin-bottom: 10px !important;
+    }
+  }
+}
+.radioGreen {
+  //   display: flex;
+  background-color: rgb(103, 192, 103);
+  border-radius: 8px;
+  color: aliceblue;
+  justify-content: center;
+  width: 80px;
+  font-weight: bold;
+}
+.radioRed {
+  //   display: flex;
+  background-color: lightcoral;
+  border-radius: 8px;
+  color: aliceblue;
+  justify-content: center;
+  width: 80px;
+  font-weight: bold;
+}
+.purple {
+  background-color: #cdcdcd;
+  border-radius: 8px;
+  justify-content: center;
+  color: aliceblue;
+  width: 80px;
+  font-weight: bold;
+}
+.form-bottom {
+  height: 40px;
+  width: 100%;
+  background: #ffffff;
+}
+.bottom-btns {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}

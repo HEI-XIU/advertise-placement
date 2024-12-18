@@ -100,7 +100,7 @@ function isAffix(tag) {
 function isFirstView() {
   try {
     // return selectedTag.value.fullPath === '/index' || selectedTag.value.fullPath === visitedViews.value[1].fullPath
-    return selectedTag.value.fullPath === '/system/menu' || selectedTag.value.fullPath === visitedViews.value[1].fullPath
+    return selectedTag.value.fullPath === '/orderReceive/receiveList' || selectedTag.value.fullPath === visitedViews.value[1].fullPath
   } catch (err) {
     return false
   }

@@ -6,43 +6,45 @@
     <div class="base-info">
       <el-card class="box-card">
         <template #header>
-            <div class="clearfix">
-              <span>基本信息</span>
-            </div>
-          </template>
-        <el-form :model="formData" class="formTable" label-position="right">
-          <el-form-item label="订单编号" label-width="100px">
+          <div class="clearfix">
+            <span>基本信息</span>
+          </div>
+        </template>
+        <el-form
+          :model="formData"
+          class="formTable"
+          ref="form"
+          :disabled="true"
+        >
+          <el-form-item label="订单编号" label-width="110px" prop="orderNo">
             <el-input
-              v-model="formData.orderId"
-              placeholder="系统自动带出"
-              clearable
+              v-model="formData.orderNo"
+              placeholder="系统生成"
+              disabled
             />
           </el-form-item>
-
-          <el-form-item label="发起人" label-width="100px">
+          <el-form-item label="发起人" label-width="110px" prop="createName">
             <el-input
-              v-model="formData.createby"
-              placeholder="系统自动带出"
-              clearable
+              v-model="formData.createName"
+              placeholder="系统带出"
+              disabled
             />
           </el-form-item>
-
-          <el-form-item label="订单名称" label-width="100px">
-            <el-input
-              v-model="formData.orderName"
-              placeholder="请输入"
-              clearable
-            />
+          <el-form-item label="订单名称" label-width="110px" prop="title">
+            <el-input v-model="formData.title" placeholder="请输入" clearable />
           </el-form-item>
-          <el-form-item label="创建时间" label-width="100px">
+          <el-form-item label="创建时间" label-width="110px" prop="createTime">
             <el-input
               v-model="formData.createTime"
-              placeholder="请输入"
-              clearable
+              placeholder="系统生成"
+              disabled
             />
           </el-form-item>
-
-          <el-form-item label="投放开始时间" label-width="100px">
+          <el-form-item
+            label="投放开始时间"
+            label-width="110px"
+            prop="startTime"
+          >
             <el-date-picker
               style="width: 100%"
               v-model="formData.startTime"
@@ -52,7 +54,7 @@
             />
           </el-form-item>
 
-          <el-form-item label="投放结束时间" label-width="100px">
+          <el-form-item label="投放结束时间" label-width="110px" prop="endTime">
             <el-date-picker
               style="width: 100%"
               v-model="formData.endTime"
@@ -64,29 +66,26 @@
 
           <el-form-item
             label="需求描述"
-            label-width="100px"
+            label-width="110px"
             style="width: 100%"
+            prop="content"
           >
             <el-input
               type="textarea"
-              v-model="formData.descript"
+              v-model="formData.content"
               placeholder="请输入"
             />
           </el-form-item>
-          <el-form-item label="附件信息" prop="fileList" class="upload-item">
-            <el-upload
-              action=""
-              :http-request="beforeUpload"
-              :before-upload="uploadBefore"
-              :limit="10"
-              :on-change="handleChange"
-              :on-exceed="handleExceed"
-              :file-list="fileList"
-              :on-preview="clickFile"
-              :on-remove="removeFile"
-              :disabled="type == 'review' || !showSubmit"
+          <el-form-item label="附件" label-width="100px">
+            <fileUpload
+              style="width: 100%"
+              :fileSize="1024"
+              :fileType="fileType"
+              :isShowTip="false"
+              @updateFileList="updateFileList"
+              :fileList="fileMsg"
             >
-            </el-upload>
+            </fileUpload>
           </el-form-item>
         </el-form>
       </el-card>
@@ -96,14 +95,19 @@
             <span>上传成果</span>
           </div>
         </template>
-        <el-form>
-          <el-form-item label="附件" label-width="100px">
-            <fileUpload :fileSize="1024" :fileType="fileType"></fileUpload>
+        <el-form :model="backData" ref="backDataRef" :rules="rules">
+          <el-form-item label="附件" label-width="100px" prop="fileList">
+            <fileUpload
+              :fileSize="1024"
+              :fileType="fileType"
+              :fileList="fileList"
+              @updateFileList="updateFileList"
+            ></fileUpload>
           </el-form-item>
-          <el-form-item label="备注" label-width="100px">
+          <el-form-item label="备注" label-width="100px" prop="remark">
             <el-input
               type="textarea"
-              v-model="formData.descript"
+              v-model="backData.remark"
               placeholder="请输入"
             />
           </el-form-item>
@@ -115,15 +119,7 @@
       <div class="form-bottom">
         <div class="bottom-btns">
           <el-button class="purple" @click="cancel">取消</el-button>
-          <el-button class="purple" @click="saveForm">保存</el-button>
-          <el-button
-            class="purple"
-            @click="submitForm"
-            v-loading="submitLoading"
-            >提交派单</el-button
-          >
-          <!-- <el-button @click="cancel">取消</el-button>
-            <el-button class="purple" @click="revoke">撤回</el-button> -->
+          <el-button class="radioGreen" @click="submitForm">提交</el-button>
         </div>
       </div>
     </div>
@@ -131,187 +127,97 @@
 </template>
 <script setup>
 import { onMounted, ref } from "vue";
-import { uploadFile, downloadFile, submitTab } from "@/api/OrderApi/addOrder";
+import { getOrderDetail, approveOrder } from "@/api/orderApi/addOrder";
 import fileUpload from "@/components/FileUpload";
-const formData = ref({
-  orderId: "",
-  createby: "",
-  orderName: "",
-  createTime: ref(getCurrentTime()),
-  startTime: "",
-  endTime: "",
-  descript: "",
+import useUserStore from "@/store/modules/user";
+
+const router = useRouter();
+const userStore = useUserStore();
+const { proxy } = getCurrentInstance();
+const type = ref(""); // 上传类型，可能是 'review' 或其他
+const backDataRef = ref(null);
+const data = reactive({
+  formData: {
+    id: "", //订单id
+    orderNo: "",
+    createBy: "",
+    createName: "",
+    title: "",
+    createTime: "",
+    startTime: "",
+    endTime: "",
+    content: "",
+  },
+  backData: {
+    remark: "",
+    fileList: [],
+  },
+  rules: {
+    fileList: [{ required: true, message: "请回传附件", trigger: "blur" }],
+  },
 });
-//文件上传
+const { formData, backData, rules } = toRefs(data);
 
 // 响应式变量
-const fileList = ref([]);
-const fileMsg = ref([]);
-
-// 获取当前时间的函数
-function getCurrentTime() {
-  const date = new Date();
-  return `${date.getFullYear()}-${(date.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} ${date
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}`;
-}
-
-// 自定义上传逻辑
-const beforeUpload = (params) => {
-  let formData = new FormData();
-  formData.append("file", params.file);
-  // 上传文件
-  uploadFile(formData).then((res) => {
-    if (res.success) {
-      Message.success("文件解析成功！");
-      this.fileMsg.push(res.data);
-    } else {
-      Message.error("导入解析失败！");
-    }
-    // this.fileList = [];
-  });
+const fileList = ref([]); //回传附件
+const fileMsg = ref([]); //素材附件
+const updateFileList = (fileListMsg) => {
+  fileList.value = fileListMsg;
+  backData.value.fileList = fileListMsg;
 };
-const fileType = [
-  "doc",
-  "docx",
-  "xls",
-  "xlsx",
-  "pdf",
-  "jpg",
-  "png",
-  "zip",
-  "ppt",
-  "pptx",
-];
-
-const uploadBefore = (file) => {
-  let suffix = file.name.substring(file.name.lastIndexOf(".") + 1);
-  if (
-    !(
-      suffix === "doc" ||
-      suffix === "docx" ||
-      suffix === "xls" ||
-      suffix === "xlsx" ||
-      suffix === "pdf" ||
-      suffix === "jpg" ||
-      suffix === "png" ||
-      suffix === "xls" ||
-      suffix === "xlsx" ||
-      suffix === "et" ||
-      suffix === "html" ||
-      suffix === "pdf" ||
-      suffix === "gif" ||
-      suffix === "jpg" ||
-      suffix === "jpeg" ||
-      suffix === "bmp" ||
-      suffix === "png" ||
-      suffix === "zip" ||
-      suffix === "rar" ||
-      suffix === "ppt" ||
-      suffix === "pptx" ||
-      suffix === "txt"
-    )
-  ) {
-    Message.warning("上传文件只能是支持的格式!");
-    return false;
+const getDetail = (detailId) => {
+  if (detailId) {
+    getOrderDetail({ id: detailId })
+      .then((res) => {
+        formData.value.id = res.data.id;
+        formData.value.createName = res.data.createName;
+        formData.value.orderNo = res.data.orderNo;
+        formData.value.title = res.data.title;
+        formData.value.createTime = res.data.createTime;
+        formData.value.startTime = res.data.startTime;
+        formData.value.endTime = res.data.endTime;
+        formData.value.content = res.data.content;
+        fileMsg.value = res.data.orderFiles;
+        fileList.value = backData.value = res.data.orderBackFiles;
+        backData.remark = res.data.remark;
+      })
+      .catch((err) => {
+        proxy.$modal.msgError(err.data.msg);
+      });
   }
-
-  const isLt2M = file.size / 1024 / 1024 < 50; //这里做文件大小限制
-  if (!isLt2M) {
-    Message.warning("上传文件大小不能超过 50MB!");
-    return false;
-  }
-  return true;
 };
-
-// 其他事件处理函数
-const handleChange = (file, fileList) => {
-  fileList = fileList;
-};
-
-const handlePreview = (file) => {
-  console.log("预览文件", file);
-};
-
-//点击文件
-const clickFile = (file) => {
-  let fileUrl = "";
-  let fileName = "";
-  fileMsg.forEach((item) => {
-    if (file.name == item.fileName) {
-      fileUrl = item.fileUrl;
-      fileName = item.fileName;
-    }
-  });
-  downloadFile(fileUrl)
-    .then((res) => {
-      var debug = res;
-      if (debug) {
-        var elink = document.createElement("a");
-        elink.download = fileName;
-        elink.style.display = "none";
-        var blob = new Blob([debug], { type: "application/x-msdownload" });
-        elink.href = URL.createObjectURL(blob);
-        document.body.appendChild(elink);
-        elink.click();
-        document.body.removeChild(elink);
-      } else {
-        this.$message.error("下载异常");
-      }
-    })
-    .catch((err) => {});
-};
-//移除文件
-const removeFile = (file) => {
-  let index = null;
-  fileMsg.forEach((item, i) => {
-    if (file.name == item.fileName) {
-      index = i;
-    }
-  });
-  fileMsg.splice(index, 1);
-};
-const handleExceed = () => {
-  Message.warning("上传文件数量不能超过10个!");
-};
-function formatDate(date) {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 月份从 0 开始，需要 +1
-  const day = date.getDate().toString().padStart(2, "0"); // 日期补零
-
-  return `${year}-${month}-${day}`;
-}
-//提交
 const submitForm = () => {
-  console.log(formatDate(formData.value.startTime));
-  let params = {
-    amount: "",
-    assignedMedia: "",
-    content: formData.value.descript,
-    createBy: 1001,
-    createTime: formData.value.createTime,
-    currentHandler: "",
-    endTime: formatDate(formData.value.endTime),
-    id: "",
-    isBack: "",
-    level: "",
-    orderNo: "ORD123456789",
-    remark: "",
-    startTime: formatDate(formData.value.startTime),
-    status: "",
-    title: formData.value.orderName,
-    updateBy: "",
-    updateTime: "",
-  };
-  console.log(params);
+  backDataRef.value.validate((valid) => {
+    if (valid) {
+      let params = {
+        id: formData.value.id,
+        remark: backData.value.remark,
+        orderBackFiles: backData.value.fileList,
+        userId: userStore.id,
+      };
+      approveOrder(params)
+        .then((res) => {
+          proxy.$modal.msgSuccess("派单成功");
+          router.go(-1);
+        })
+        .catch((err) => {
+          proxy.$modal.msgError(err.data.msg);
+        });
+    }
+  });
 };
-onMounted(() => {});
+const cancel = () => {
+  router.go(-1);
+};
+
+//提交
+onMounted(() => {
+  const detailId = router.currentRoute.value.query?.id;
+  type.value = router.currentRoute.value.query?.type;
+  if (detailId) {
+    getDetail(detailId);
+  }
+});
 </script>
 <style lang="scss" scoped>
 .container {
@@ -330,7 +236,7 @@ onMounted(() => {});
   box-sizing: border-box;
   box-shadow: none;
   border-radius: 0;
-  border:none;
+  border: none;
   .clearfix {
     span {
       font-size: 16px;
@@ -343,9 +249,13 @@ onMounted(() => {});
   }
 }
 
-.base-info .formTable {
-  display: flex;
-  flex-wrap: wrap;
+.base-info {
+  height: 85vh;
+  overflow: auto;
+  .formTable {
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 .formTable .el-form-item {
@@ -358,50 +268,7 @@ onMounted(() => {});
   width: 100%; /* 如果最后一项需要占满一行 */
 }
 
-.title {
-  width: 100%;
-}
-.title-con {
-  width: 100%;
-  margin: 0 0 0 2%;
-}
-
 .formTable {
   width: 100%;
-}
-
-.radioGreen {
-  display: flex;
-  background-color: rgb(103, 192, 103);
-  border-radius: 10%;
-  color: aliceblue;
-  justify-content: center;
-  width: 50px;
-  height: 30px;
-  font-weight: bold;
-}
-.radioRed {
-  display: flex;
-  background-color: lightcoral;
-  border-radius: 10%;
-  color: aliceblue;
-  justify-content: center;
-  width: 50px;
-  height: 30px;
-  font-weight: bold;
-}
-.form-bottom {
-  width: 100%;
-  background: #ffffff;
-}
-.bottom-btns {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-.purple {
-  width: 100px;
-  background-color: #169bd5;
-  color: #ffffff;
 }
 </style>

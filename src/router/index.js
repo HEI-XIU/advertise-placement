@@ -73,7 +73,7 @@ export const constantRoutes = [
     {
     path: '',
     component: Layout,
-    redirect: '/system/menu',
+    redirect: '/orderReceive/receiveList',
   },
   {
     path: '/user',

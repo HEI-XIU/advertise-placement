@@ -46,6 +46,7 @@ const useUserStore = defineStore(
             } else {
               this.roles = ['ROLE_DEFAULT']
             }
+            this.level = user.dept.level
             this.id = user.userId
             this.name = user.userName
             this.avatar = avatar
