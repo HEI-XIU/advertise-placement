@@ -297,7 +297,7 @@ const getDetail = (detailId) => {
         formData.value.content = res.data.content;
         fileMsg.value = res.data.orderFiles;
         // editData.value.remark = res.data.remark
-        editData.value.mediaId = res.data?.mediaId;
+        // editData.value.mediaId = res.data?.mediaId;
       })
       .catch((err) => {
         proxy.$modal.msgError(err.data.msg);
@@ -315,6 +315,7 @@ const getTasks = (detailId) => {
       (element) => element.userId === userStore.id
     );
     editData.value.remark = foundElement?.remark;
+    editData.value.mediaId = foundElement?.mediaId;
     tasks.value = res.data;
   });
 };
