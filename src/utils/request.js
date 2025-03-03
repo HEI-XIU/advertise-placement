@@ -17,7 +17,7 @@ const service = axios.create({
   // axios中请求配置有baseURL选项，表示请求URL公共部分
   baseURL: import.meta.env.VITE_APP_BASE_API,
   // 超时
-  timeout: 10000
+  // timeout: 10000
 })
 
 // request拦截器
@@ -68,7 +68,7 @@ service.interceptors.request.use(config => {
   return config
 }, error => {
     console.log(error)
-    Promise.reject(error)
+    Promise.reject(error,1000)
 })
 
 // 响应拦截器
@@ -119,7 +119,7 @@ service.interceptors.response.use(res => {
     } else if (message.includes("Request failed with status code")) {
       message = "系统接口" + message.substr(message.length - 3) + "异常";
     }
-    ElMessage({ message: message, type: 'error', duration: 5 * 1000 })
+    ElMessage({ message: message, type: 'error', duration: 1 * 1000 })
     return Promise.reject(error)
   }
 )

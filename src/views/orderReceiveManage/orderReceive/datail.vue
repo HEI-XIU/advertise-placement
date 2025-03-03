@@ -84,7 +84,7 @@
           </el-form-item>
         </el-form>
       </el-card>
-      <el-card class="box-card" v-if="isShow">
+      <el-card class="box-card" v-if="isShowCard">
         <template #header>
           <div class="clearfix">
             <span>派单处理</span>
@@ -96,16 +96,6 @@
           ref="editDataRef"
           :disabled="isReview"
         >
-          <!-- <el-form-item label="操作" label-width="100px" prop="operate">
-            <el-radio-group v-model="editData.operate">
-              <el-radio label="1">
-                <span class="btnRed">驳回</span>
-              </el-radio>
-              <el-radio label="2">
-                <span class="btnGreen">通过</span>
-              </el-radio>
-            </el-radio-group>
-          </el-form-item> -->
           <el-form-item
             label="派单媒体"
             label-width="100px"
@@ -121,7 +111,11 @@
               ></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="派单意见 " label-width="100px" prop="remark">
+          <el-form-item label-width="100px" prop="remark">
+            <template #label>
+              <span v-if="isReject"> 驳回意见</span>
+              <span v-else> 派单意见 </span>
+            </template>
             <el-input
               type="textarea"
               v-model="editData.remark"
@@ -172,7 +166,26 @@
                 >
                   {{ item.createTime }}</label
                 >
+
+                <p v-if="item.mediaId">
+                  <label
+                    v-if="item.mediaId"
+                    style="margin-right: 10px; font-weight: normal"
+                    >接收媒体：</label
+                  >
+                  <label
+                    v-if="item.mediaId"
+                    style="color: #e6a23c; font-weight: bold"
+                  >
+                    {{ item.mediaName }}
+                  </label>
+                </p>
+
                 <p v-if="item.remark">
+                  <span style="margin-right: 10px" v-if="item.nameKey == 2"
+                    >驳回意见</span
+                  >
+                  <span style="margin-right: 10px" v-else>派单意见:</span>
                   <el-tag
                     :type="getTimelineItemType(item)"
                     class="reason-tag"
@@ -195,7 +208,7 @@
           <el-button
             type="danger"
             class="btnRed"
-            @click="reject"
+            @click="rejectDialogOpen"
             v-loading="submitLoading"
             v-if="isShow && !isReview"
             >驳回派单</el-button
@@ -211,7 +224,7 @@
           <el-button
             type="primary"
             class="btnGreen"
-            @click="approve"
+            @click="receive"
             v-loading="submitLoading"
             v-if="!isShow && !isReview"
             >接收派单</el-button
@@ -219,6 +232,31 @@
         </div>
       </div>
     </div>
+    <el-dialog
+      title="驳回原因"
+      v-model="rejectDialog"
+      width="800px"
+      style="margin-top: 30vh !important"
+    >
+      <el-form
+        :model="editData"
+        :rules="rules"
+        ref="rejectReasonRef"
+        :disabled="isReview"
+      >
+        <el-form-item prop="reason">
+          <el-input
+            type="textarea"
+            v-model="editData.reason"
+            placeholder="请输入"
+          />
+        </el-form-item>
+      </el-form>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="reject">确定</el-button>
+        <el-button @click="rejectDialog = false">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script setup>
@@ -231,7 +269,8 @@ import {
   getAllMedia,
 } from "@/api/orderApi/addOrder";
 import useUserStore from "@/store/modules/user";
-const editDataRef = ref(null);
+import { el } from "element-plus/es/locales.mjs";
+const router = useRouter();
 const userStore = useUserStore();
 const { proxy } = getCurrentInstance();
 
@@ -253,10 +292,12 @@ const data = reactive({
     remark: "",
     userId: userStore.id,
     operate: "",
+    reason: undefined,
   },
   rules: {
     operate: [{ required: true, message: "请选择操作", trigger: "blur" }],
     remark: [{ required: true, message: "请输入派单意见", trigger: "blur" }],
+    reason: [{ required: true, message: "请输入驳回原因", trigger: "blur" }],
     mediaId: [{ required: true, message: "请选择派单媒体", trigger: "blur" }],
   },
 });
@@ -264,17 +305,24 @@ const data = reactive({
 const { formData, editData, rules } = toRefs(data);
 
 const mediaList = ref([]);
+const mediaHandler = ref(null);
 const fileMsg = ref([]);
-const router = useRouter();
+const editDataRef = ref(null);
+const rejectReasonRef = ref(null);
+
 const type = ref(""); // 可能是 'review' 或其他
 const isShow = ref(userStore.level != 4 ? true : false);
+const isShowCard = ref(
+  userStore.level != 1 && userStore.level != 4 ? true : false
+);
 const isReview = ref(false);
-
+const rejectDialog = ref(false);
+const isReject = ref(false);
 const submitLoading = ref(false);
 const tasksLoad = ref(false);
 const tasks = ref([]);
 onMounted(() => {
-  if (userStore.level == 3) getMediaList();
+  getMediaList();
   const detailId = router.currentRoute.value.query?.id;
   type.value = router.currentRoute.value.query?.type;
   isReview.value = type.value == "review" ? true : false;
@@ -296,11 +344,9 @@ const getDetail = (detailId) => {
         formData.value.endTime = res.data.endTime;
         formData.value.content = res.data.content;
         fileMsg.value = res.data.orderFiles;
-        // editData.value.remark = res.data.remark
-        // editData.value.mediaId = res.data?.mediaId;
       })
       .catch((err) => {
-        proxy.$modal.msgError(err.data.msg);
+        proxy.$modal.msgError(err);
       });
   }
 };
@@ -314,30 +360,82 @@ const getTasks = (detailId) => {
     const foundElement = res.data.find(
       (element) => element.userId === userStore.id
     );
-    editData.value.remark = foundElement?.remark;
-    editData.value.mediaId = foundElement?.mediaId;
-    tasks.value = res.data;
+    if (foundElement?.nameKey == 2) {
+      if (!isReview.value) {
+        editData.value.remark = "";
+        editData.value.mediaId = "";
+      } else {
+        editData.value.remark = foundElement?.remark;
+        editData.value.mediaId = foundElement?.mediaId;
+      }
+      isReject.value = true;
+    } else {
+      if (!isReview.value) {
+        editData.value.remark = "";
+        editData.value.mediaId = "";
+      } else {
+        editData.value.remark = foundElement?.remark;
+        editData.value.mediaId = foundElement?.mediaId;
+      }
+      isReject.value = false;
+    }
+    tasks.value = res.data.map(item=>{
+      return {
+        ...item,
+        mediaName: item.mediaId?mediaList.value.find((media) =>  {
+          return media.deptId == item.mediaId
+      }).deptName:""
+      }
+    });
   });
 };
-
+const rejectDialogOpen = () => {
+  rejectDialog.value = true;
+  proxy.resetForm("rejectReasonRef");
+};
 const reject = () => {
-  let params = {
-    id: formData.value.id,
-    mediaId: editData.value.mediaId,
-    deptId: editData.value.mediaId,
-    remark: editData.value.remark,
-    userId: editData.value.userId,
-  };
-  rejectOrder(params)
-    .then((res) => {
-      cancel();
-      proxy.$modal.msgSuccess("驳回成功");
-    })
-    .catch((err) => {
-      proxy.$modal.msgError(err.data.msg);
-    });
+  rejectReasonRef.value.validate((valid) => {
+    if (valid) {
+      let params = {
+        id: formData.value.id,
+        mediaId: editData.value.mediaId,
+        deptId: editData.value.mediaId,
+        remark: editData.value.reason,
+        userId: editData.value.userId,
+      };
+      rejectOrder(params)
+        .then((res) => {
+          cancel();
+          proxy.$modal.msgSuccess("驳回成功");
+        })
+        .catch((err) => {
+          proxy.$modal.msgError(err.data.msg);
+        });
+    }
+  });
 };
 const approve = () => {
+  editDataRef.value.validate((valid) => {
+    if (valid) {
+      let params = {
+        id: formData.value.id,
+        mediaId: editData.value.mediaId,
+        deptId: editData.value.mediaId,
+        remark: editData.value.remark,
+        userId: editData.value.userId,
+      };
+      approveOrder(params)
+        .then((res) => {
+          cancel();
+          proxy.$modal.msgSuccess("派单成功");
+        })
+        .catch((err) => {
+          proxy.$modal.msgError(err.data.msg);
+        });
+    }
+  });
+};
+const receive = () => {
   let params = {
     id: formData.value.id,
     mediaId: editData.value.mediaId,
@@ -355,7 +453,7 @@ const approve = () => {
     });
 };
 const cancel = () => {
-  router.go(-1);
+  router.push("/orderReceive/receiveList");
 };
 
 const getTimelineItemIcon = (item) => {
@@ -453,5 +551,9 @@ const getTimelineItemType = (item) => {
   white-space: normal;
   line-height: 1.5;
   text-align: left;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: center;
 }
 </style>

@@ -17,9 +17,9 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
-        <el-form-item label="订单名称" prop="title">
+        <el-form-item label="订单名称" prop="orderName">
           <el-input
-            v-model="queryParams.title"
+            v-model="queryParams.orderName"
             placeholder="请输入订单名称"
             clearable
             style="width: 200px"
@@ -65,21 +65,21 @@
         label="投放开始时间"
         align="center"
         prop="startTime"
-        width="120"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.startTime, "{y}-{m}-{d} {h}:{m}:{s} ") }}</span>
+        </template> -->
       </el-table-column>
       <el-table-column
         label="投放结束时间"
         align="center"
         prop="endTime"
-        width="120"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.endTime, "{y}-{m}-{d} {h}:{m}:{s}") }}</span>
+        </template> -->
       </el-table-column>
       <!-- <el-table-column
         label="创建人"
@@ -91,11 +91,11 @@
         label="创建时间"
         align="center"
         prop="createTime"
-        width="100"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d} {h}:{m}:{s} ") }}</span>
+        </template> -->
       </el-table-column>
       <!-- <el-table-column label="处理状态" align="center" prop="status" width="80">
         <template #default="scope">
@@ -187,7 +187,7 @@ const data = reactive({
     pageNum: 1,
     pageSize: 10,
     orderNo: undefined,
-    title: undefined,
+    orderName: undefined,
   },
 });
 const { queryParams } = toRefs(data);

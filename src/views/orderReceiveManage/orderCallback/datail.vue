@@ -94,7 +94,7 @@
             <span>上传成果</span>
           </div>
         </template>
-        <el-form :model="backData" ref="backDataRef" :rules="rules">
+        <el-form :model="backData" ref="backDataRef" :rules="rules" :disabled="isReview">
           <el-form-item label="附件" label-width="100px" prop="fileList">
             <fileUpload
              style="width: 100%"
@@ -102,6 +102,7 @@
               :fileType="fileType"
               :fileList="fileList"
               @updateFileList="updateFileList"
+              :isShowTip="!isReview"
             ></fileUpload>
           </el-form-item>
           <el-form-item label="备注" label-width="100px" prop="remark">
@@ -120,6 +121,7 @@
         <div class="bottom-btns">
           <el-button type="info" class="purple" @click="cancel">取消</el-button>
           <el-button type="primary" class="btnGreen" @click="submitForm"
+          v-if="!isReview"
             >提交</el-button
           >
         </div>
@@ -170,10 +172,14 @@ const fileType = ref([
   "zip",
   "ppt",
   "pptx",
+  "mp4",
+  "mp3",
 ]);
 // 响应式变量
 const fileList = ref([]); //回传附件
 const fileMsg = ref([]); //素材附件
+const isReview = ref(false);
+
 const updateFileList = (fileListMsg) => {
   fileList.value = fileListMsg;
   backData.value.fileList = fileListMsg;
@@ -191,8 +197,10 @@ const getDetail = (detailId) => {
         formData.value.endTime = res.data.endTime;
         formData.value.content = res.data.content;
         fileMsg.value = res.data.orderFiles;
-        fileList.value = backData.value = res.data.orderBackFiles;
-        backData.remark = res.data.remark;
+        fileList.value = backData.value.fileList = res.data.orderBackFiles;
+        backData.value.remark = res.data.remark;
+
+        console.log("backData.remark",backData.remark);
       })
       .catch((err) => {
         proxy.$modal.msgError(err.data.msg);
@@ -220,13 +228,14 @@ const submitForm = () => {
   });
 };
 const cancel = () => {
-  router.go(-1);
+  router.push("/orderReceive/callbackList");
 };
 
 //提交
 onMounted(() => {
   const detailId = router.currentRoute.value.query?.id;
   type.value = router.currentRoute.value.query?.type;
+  isReview.value = type.value == "review" ? true : false;
   if (detailId) {
     getDetail(detailId);
   }

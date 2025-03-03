@@ -88,21 +88,21 @@
         label="投放开始时间"
         align="center"
         prop="startTime"
-        width="120"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.startTime, "{y}-{m}-{d} {h}:{m}:{s}") }}</span>
+        </template> -->
       </el-table-column>
       <el-table-column
         label="投放结束时间"
         align="center"
         prop="endTime"
-        width="120"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.endTime, "{y}-{m}-{d} {h}:{m}:{s}") }}</span>
+        </template> -->
       </el-table-column>
       <el-table-column
         label="创建人"
@@ -114,11 +114,11 @@
         label="创建时间"
         align="center"
         prop="createTime"
-        width="100"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d} {h}:{m}:{s}") }}</span>
+        </template> -->
       </el-table-column>
       <el-table-column label="处理状态" align="center" prop="status" width="80">
         <template #default="scope">
@@ -149,7 +149,7 @@
             type="primary"
             icon="Edit"
             @click="handleEdit(scope.row)"
-            v-if="scope.row.operate==0 || (scope.row.status == 0||scope.row.status == 2)"
+            v-if="scope.row.operate==0 || scope.row.status == 0"
             >处理</el-button
           >
           <el-button

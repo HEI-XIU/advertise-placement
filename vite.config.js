@@ -5,6 +5,8 @@ import createVitePlugins from './vite/plugins'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd())
+
+  const port = process.env.port || process.env.npm_config_port || 53101 // 端口
   const { VITE_APP_ENV } = env
   return {
     // 部署生产环境和开发环境下的URL。
@@ -25,16 +27,24 @@ export default defineConfig(({ mode, command }) => {
     },
     // vite 相关配置
     server: {
-      port: 53101,
+      port: port,
       host: true,
       open: true,
       proxy: {
         // https://cn.vitejs.dev/config/#server-proxy
         '/dev-api': {
           target: 'http://121.229.113.39:8999',
+          // target: 'http://192.168.77.247:8080',
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/dev-api/, '')
+        },
+        '/prod-api': {
+          target: 'http://121.229.113.39:8899',
+          // target: 'http://192.168.77.247:8080',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/prod-api/, '')
         }
+
       }
     },
     //fix:error:stdin>:7356:1: warning: "@charset" must be the first rule in the file

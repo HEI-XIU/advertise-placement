@@ -142,6 +142,8 @@ const fileType = ref([
   "zip",
   "ppt",
   "pptx",
+  "mp4",
+  "mp3",
 ]);
 const router = useRouter();
 const userStore = useUserStore();
@@ -172,7 +174,7 @@ const rules = reactive({
           if (!formData.value.endTime) {
             callback(new Error("请选择投放结束时间！"));
           } else if (Date.parse(formData.value.endTime) < Date.parse(value)) {
-            callback(new Error("投放开始时间不得早于投放结束时间"));
+            callback(new Error("投放开始时间不得晚于投放结束时间"));
           } else {
             form.value.clearValidate("startTime");
             form.value.clearValidate("endTime");
@@ -193,7 +195,7 @@ const rules = reactive({
           if (!formData.value.startTime) {
             callback(new Error("请选择投放开始时间！"));
           } else if (Date.parse(formData.value.startTime) > Date.parse(value)) {
-            callback(new Error("投放开始时间不得晚于投放结束时间"));
+            callback(new Error("投放结束时间不得早于投放开始时间"));
           } else {
             //清除校验
             form.value.clearValidate("startTime");

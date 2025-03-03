@@ -49,9 +49,9 @@
             >搜索</el-button
           >
         </div>
-        <!-- <span class="expend" @click="showExpend = !showExpend">
+        <span class="expend" @click="showExpend = !showExpend">
           <el-icon><Sort /></el-icon>
-        </span> -->
+        </span>
       </div>
     </div>
     <el-table :data="noticeList">
@@ -73,21 +73,21 @@
         label="投放开始时间"
         align="center"
         prop="startTime"
-        width="120"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.startTime, "{y}-{m}-{d} {h}:{m}:{s}") }}</span>
+        </template> -->
       </el-table-column>
       <el-table-column
         label="投放结束时间"
         align="center"
         prop="endTime"
-        width="120"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.endTime, "{y}-{m}-{d} {h}:{m}:{s}") }}</span>
+        </template> -->
       </el-table-column>
       <el-table-column
         label="创建人"
@@ -99,11 +99,11 @@
         label="创建时间"
         align="center"
         prop="createTime"
-        width="100"
+        width="160"
       >
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d}") }}</span>
-        </template>
+        <!-- <template #default="scope">
+          <span>{{ parseTime(scope.row.createTime, "{y}-{m}-{d} {h}:{m}:{s}") }}</span>
+        </template> -->
       </el-table-column>
       <el-table-column
         label="回传状态"
@@ -131,6 +131,7 @@
             type="primary"
             icon="Upload"
             @click="handleEdit(scope.row)"
+            v-if="scope.row.isBack != 1&&userStore.level == 4"
             >上传结果</el-button
           >
           <el-button
@@ -158,7 +159,9 @@
 import { getBackOrder, deleteOrder } from "@/api/orderApi/addOrder";
 import { onMounted, ref } from "vue";
 
+import useUserStore from "@/store/modules/user";
 const router = useRouter();
+const userStore = useUserStore();
 const noticeList = ref([]);
 // const loading = ref(true);
 const showSearch = ref(true);

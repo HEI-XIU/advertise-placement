@@ -13,7 +13,7 @@
         <ul class="list-unstyled">
           <li class="link-type">
             <router-link to="/">
-              回
+              返回
             </router-link>
           </li>
         </ul>
